@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
 import java.util.Collection;
@@ -39,11 +40,11 @@ public class UserController {
         return userService.create(user);
     }
 
-    @PutMapping
-    public User put(@Valid @RequestBody User user, BindingResult errors) {
+    @PatchMapping("/{userId}")
+    public User update(@PathVariable Long userId, @Valid @RequestBody UserDto userDto, BindingResult errors) {
         checkErrors(errors);
-        log.info("Запрос на обновление пользователя {}", user.getEmail());
-        return userService.update(user);
+        log.info("Запрос на обновление пользователя {}", userDto.getEmail());
+        return userService.update(userId, userDto);
     }
 
     @DeleteMapping("/{id}")

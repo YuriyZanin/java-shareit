@@ -1,6 +1,8 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.utils.exception.AlreadyExistException;
 import ru.practicum.shareit.utils.exception.NotFoundException;
 
@@ -30,10 +32,10 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User create(User user) {
-        user.setId(getId());
-        if (users.values().stream().anyMatch(u -> u.getEmail().equals(user.getEmail()))) {
+        if (checkEmailDuplicated(user.getEmail())) {
             throw new AlreadyExistException(String.format("Пользователь с email %s уже есть в базе", user.getEmail()));
         }
+        user.setId(getId());
         users.put(user.getId(), user);
         return user;
     }
@@ -48,6 +50,23 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
+    public User update(Long userId, UserDto userDetails) {
+        if (!users.containsKey(userId)) {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден в базе", userId));
+        }
+
+        User actual = users.get(userId);
+        if (userDetails.getEmail() != null && !userDetails.getEmail().equals(actual.getEmail())
+                && checkEmailDuplicated(userDetails.getEmail())) {
+            throw new AlreadyExistException(
+                    String.format("Нельзя изменить email на %s т.к. он уже есть в базе", userDetails.getEmail()));
+        }
+
+        users.put(userId, UserMapper.updateFromDto(actual, userDetails));
+        return actual;
+    }
+
+    @Override
     public boolean delete(Long id) {
         if (users.containsKey(id)) {
             return users.remove(id) != null;
@@ -58,5 +77,9 @@ public class InMemoryUserRepository implements UserRepository {
 
     private long getId() {
         return ++lastId;
+    }
+
+    private boolean checkEmailDuplicated(String email) {
+        return users.values().stream().anyMatch(u -> u.getEmail().equals(email));
     }
 }
