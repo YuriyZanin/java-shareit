@@ -17,7 +17,7 @@ public class ValidationUtil {
     public static String buildErrorMessage(List<FieldError> errors) {
         return errors.stream()
                 .map(ValidationUtil::buildErrorString)
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.joining("\n "));
     }
 
     public static void checkErrors(BindingResult errors) {
