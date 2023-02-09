@@ -17,7 +17,7 @@ public class UserValidationTest extends AbstractValidationTest {
     @Test
     void shouldBeSuccessValidation() {
         UserDto test = UserDto.builder().email("test@email.com").name("test").build();
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(test);
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(test, CreateValidation.class);
         assertTrue(violations.isEmpty());
     }
 
@@ -39,14 +39,22 @@ public class UserValidationTest extends AbstractValidationTest {
     }
 
     @Test
+    void shouldBeSuccessWhenUpdateWithNullEmail() {
+        UserDto userWithNullMail = UserDto.builder().name("update").build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithNullMail, UpdateValidation.class);
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
     void shouldBeFailedIfEmailIsEmpty() {
         UserDto userWithEmptyMail = UserDto.builder().email("").name("login").build();
-        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithEmptyMail, CreateValidation.class);
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithEmptyMail,
+                CreateValidation.class, UpdateValidation.class);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
 
         UserDto userWithBlankMail = UserDto.builder().email("   ").name("login").build();
-        violations = validator.validate(userWithBlankMail, CreateValidation.class);
+        violations = validator.validate(userWithBlankMail, CreateValidation.class, UpdateValidation.class);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
     }
@@ -60,17 +68,30 @@ public class UserValidationTest extends AbstractValidationTest {
     }
 
     @Test
+    void shouldBeSuccessWhenUpdateWithNullName() {
+        UserDto userWithNullName = UserDto.builder().email("test@mail.com").name(null).build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithNullName, UpdateValidation.class);
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
     void shouldBeFailedIfLoginIsBlank() {
         UserDto userWithSpacesName = UserDto.builder().email("test@mail.com").name("   ").build();
         Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithSpacesName, CreateValidation.class);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("name")));
+
+        violations = validator.validate(userWithSpacesName, UpdateValidation.class);
+        assertEquals(1, violations.size());
     }
 
     @Test
     void shouldBeFailedIfLoginIsEmpty() {
         UserDto userWithEmptyName = UserDto.builder().email("test@mail.com").name("").build();
         Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithEmptyName, CreateValidation.class);
+        assertEquals(1, violations.size());
+
+        violations = validator.validate(userWithEmptyName, UpdateValidation.class);
         assertEquals(1, violations.size());
     }
 }
