@@ -2,7 +2,6 @@ package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -20,15 +19,11 @@ public class InMemoryItemRepository implements ItemService {
     private long lastId = 0;
 
     @Override
-    public Item create(Long userId, ItemDto itemDetails) {
+    public Item create(Long userId, Item item) {
         User owner = userRepository.get(userId);
-        Item item = Item.builder()
-                .id(getId())
-                .name(itemDetails.getName())
-                .description(itemDetails.getDescription())
-                .available(itemDetails.getAvailable())
-                .owner(owner)
-                .build();
+        item.setId(getId());
+        item.setOwner(owner);
+
         itemsByUser.compute(userId, (user, userItems) -> {
             if (userItems == null) {
                 userItems = new HashMap<>();
@@ -40,14 +35,15 @@ public class InMemoryItemRepository implements ItemService {
     }
 
     @Override
-    public Item update(Long userId, Long itemId, ItemDto itemDetails) {
+    public Item update(Long userId, Item item) {
         User owner = userRepository.get(userId);
-        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(itemId)) {
-            Item actual = itemsByUser.get(userId).get(itemId);
-            itemsByUser.get(userId).put(itemId, ItemMapper.updateFromDto(actual, itemDetails));
+        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(item.getId())) {
+            Item actual = itemsByUser.get(userId).get(item.getId());
+            itemsByUser.get(userId).put(item.getId(), ItemMapper.updateFrom(actual, item));
             return actual;
         } else {
-            throw new NotFoundException(String.format("У пользователя %s нет вещи с id %d", owner.getEmail(), itemId));
+            throw new NotFoundException(
+                    String.format("У пользователя %s нет вещи с id %d", owner.getEmail(), item.getId()));
         }
     }
 

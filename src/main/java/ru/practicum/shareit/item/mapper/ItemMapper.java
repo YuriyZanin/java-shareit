@@ -13,17 +13,34 @@ public class ItemMapper {
         );
     }
 
+    public static Item toItem(ItemDto itemDto) {
+        return Item.builder()
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .available(itemDto.getAvailable())
+                .build();
+    }
+
+    public static Item toItem(Long itemId, ItemDto itemDto) {
+        return Item.builder()
+                .id(itemId)
+                .name(itemDto.getName())
+                .description(itemDto.getDescription())
+                .available(itemDto.getAvailable())
+                .build();
+    }
+
     // Изменить можно название, описание и статус доступа к аренде
-    public static Item updateFromDto(Item item, ItemDto itemDto) {
-        if (itemDto.getName() != null) {
-            item.setName(itemDto.getName());
+    public static Item updateFrom(Item actual, Item updated) {
+        if (updated.getName() != null) {
+            actual.setName(updated.getName());
         }
-        if (itemDto.getAvailable() != null) {
-            item.setAvailable(itemDto.getAvailable());
+        if (updated.getAvailable() != null) {
+            actual.setAvailable(updated.getAvailable());
         }
-        if (itemDto.getDescription() != null) {
-            item.setDescription(itemDto.getDescription());
+        if (updated.getDescription() != null) {
+            actual.setDescription(updated.getDescription());
         }
-        return item;
+        return actual;
     }
 }

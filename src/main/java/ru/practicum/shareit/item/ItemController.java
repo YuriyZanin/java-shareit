@@ -3,11 +3,14 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.utils.validation.CreateValidation;
+import ru.practicum.shareit.utils.validation.UpdateValidation;
 
-import javax.validation.Valid;
 import java.util.List;
 
 import static ru.practicum.shareit.utils.validation.ValidationUtil.checkErrors;
@@ -21,17 +24,17 @@ public class ItemController {
 
     @PostMapping
     public Item create(@RequestHeader("X-Sharer-User-Id") long userId,
-                       @Valid @RequestBody ItemDto itemDetails, BindingResult errors) {
+                       @Validated(CreateValidation.class) @RequestBody ItemDto itemDetails, BindingResult errors) {
         checkErrors(errors);
         log.info("Запрос на добавление {}", itemDetails.getName());
-        return itemService.create(userId, itemDetails);
+        return itemService.create(userId, ItemMapper.toItem(itemDetails));
     }
 
     @PatchMapping("/{itemId}")
     public Item update(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
-                       @RequestBody ItemDto itemDetails) {
+                       @Validated(UpdateValidation.class) @RequestBody ItemDto itemDetails) {
         log.info("Запрос на изменение {} у пользователя с id {}", itemDetails.getName(), userId);
-        return itemService.update(userId, itemId, itemDetails);
+        return itemService.update(userId, ItemMapper.toItem(itemId, itemDetails));
     }
 
     @GetMapping("/{itemId}")
