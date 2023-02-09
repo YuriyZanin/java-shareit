@@ -11,13 +11,28 @@ public class UserMapper {
         );
     }
 
-    public static User updateFromDto(User user, UserDto userDto) {
-        if (userDto.getName() != null) {
-            user.setName(userDto.getName());
+    public static User toUser(UserDto userDto) {
+        return User.builder()
+                .name(userDto.getName())
+                .email(userDto.getEmail())
+                .build();
+    }
+
+    public static User toUser(Long userId, UserDto userDto) {
+        return User.builder()
+                .id(userId)
+                .name(userDto.getName())
+                .email(userDto.getEmail())
+                .build();
+    }
+
+    public static User updateFrom(User actual, User updated) {
+        if (updated.getName() != null) {
+            actual.setName(updated.getName());
         }
-        if (userDto.getEmail() != null) {
-            user.setEmail(userDto.getEmail());
+        if (updated.getEmail() != null) {
+            actual.setEmail(updated.getEmail());
         }
-        return user;
+        return actual;
     }
 }

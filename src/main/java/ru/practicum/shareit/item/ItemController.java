@@ -10,7 +10,7 @@ import ru.practicum.shareit.item.model.Item;
 import javax.validation.Valid;
 import java.util.List;
 
-import static ru.practicum.shareit.utils.ValidationUtil.checkErrors;
+import static ru.practicum.shareit.utils.validation.ValidationUtil.checkErrors;
 
 @Slf4j
 @RestController

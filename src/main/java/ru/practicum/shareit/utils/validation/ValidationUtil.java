@@ -1,4 +1,4 @@
-package ru.practicum.shareit.utils;
+package ru.practicum.shareit.utils.validation;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.validation.BindingResult;

@@ -3,17 +3,17 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
+import ru.practicum.shareit.utils.validation.CreateValidation;
+import ru.practicum.shareit.utils.validation.UpdateValidation;
 
-import javax.validation.Valid;
 import java.util.Collection;
 
-import static ru.practicum.shareit.utils.ValidationUtil.checkErrors;
+import static ru.practicum.shareit.utils.validation.ValidationUtil.checkErrors;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -34,17 +34,18 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@Valid @RequestBody User user, BindingResult errors) {
+    public User create(@Validated(CreateValidation.class) @RequestBody UserDto userDetails, BindingResult errors) {
         checkErrors(errors);
-        log.info("Запрос на создание пользователя {}", user.getEmail());
-        return userService.create(user);
+        log.info("Запрос на создание пользователя {}", userDetails.getEmail());
+        return userService.create(UserMapper.toUser(userDetails));
     }
 
     @PatchMapping("/{userId}")
-    public User update(@PathVariable Long userId, @Valid @RequestBody UserDto userDto, BindingResult errors) {
+    public User update(@PathVariable Long userId,
+                       @Validated(UpdateValidation.class) @RequestBody UserDto userDto, BindingResult errors) {
         checkErrors(errors);
         log.info("Запрос на обновление пользователя {}", userDto.getEmail());
-        return userService.update(userId, userDto);
+        return userService.update(UserMapper.toUser(userId, userDto));
     }
 
     @DeleteMapping("/{id}")

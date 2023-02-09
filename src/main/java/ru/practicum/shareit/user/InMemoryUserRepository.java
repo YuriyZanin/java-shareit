@@ -1,7 +1,6 @@
 package ru.practicum.shareit.user;
 
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.utils.exception.AlreadyExistException;
 import ru.practicum.shareit.utils.exception.NotFoundException;
@@ -42,27 +41,18 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public User update(User user) {
-        if (user.getId() == null || !users.containsKey(user.getId())) {
+        if (!users.containsKey(user.getId())) {
             throw new NotFoundException(String.format("Пользователь с id %d не найден в базе", user.getId()));
         }
-        users.put(user.getId(), user);
-        return user;
-    }
 
-    @Override
-    public User update(Long userId, UserDto userDetails) {
-        if (!users.containsKey(userId)) {
-            throw new NotFoundException(String.format("Пользователь с id %d не найден в базе", userId));
-        }
-
-        User actual = users.get(userId);
-        if (userDetails.getEmail() != null && !userDetails.getEmail().equals(actual.getEmail())
-                && checkEmailDuplicated(userDetails.getEmail())) {
+        User actual = users.get(user.getId());
+        if (user.getEmail() != null && !user.getEmail().equals(actual.getEmail())
+                && checkEmailDuplicated(user.getEmail())) {
             throw new AlreadyExistException(
-                    String.format("Нельзя изменить email на %s т.к. он уже есть в базе", userDetails.getEmail()));
+                    String.format("Пользователь с email %s уже есть в базе", user.getEmail()));
         }
 
-        users.put(userId, UserMapper.updateFromDto(actual, userDetails));
+        users.put(user.getId(), UserMapper.updateFrom(actual, user));
         return actual;
     }
 

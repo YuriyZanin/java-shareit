@@ -2,6 +2,9 @@ package ru.practicum.shareit.user;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.AbstractValidationTest;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.utils.validation.CreateValidation;
+import ru.practicum.shareit.utils.validation.UpdateValidation;
 
 import javax.validation.ConstraintViolation;
 import java.util.Set;
@@ -13,60 +16,61 @@ public class UserValidationTest extends AbstractValidationTest {
 
     @Test
     void shouldBeSuccessValidation() {
-        User test = User.builder().email("test@email.com").name("test").build();
-        Set<ConstraintViolation<User>> violations = validator.validate(test);
+        UserDto test = UserDto.builder().email("test@email.com").name("test").build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(test);
         assertTrue(violations.isEmpty());
     }
 
     @Test
     void shouldBeFailedIfEmailIsIncorrect() {
-        User userWithBadMail = User.builder().email("incorrectMail@").name("login").build();
-        Set<ConstraintViolation<User>> violations = validator.validate(userWithBadMail);
+        UserDto userWithBadMail = UserDto.builder().email("incorrectMail@").name("login").build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(
+                userWithBadMail, CreateValidation.class, UpdateValidation.class);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
     }
 
     @Test
     void shouldBeFailedIfEmailIsNull() {
-        User userWithNullMail = User.builder().email(null).name("login").build();
-        Set<ConstraintViolation<User>> violations = validator.validate(userWithNullMail);
-        assertEquals(2, violations.size());
+        UserDto userWithNullMail = UserDto.builder().email(null).name("login").build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithNullMail, CreateValidation.class);
+        assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
     }
 
     @Test
     void shouldBeFailedIfEmailIsEmpty() {
-        User userWithEmptyMail = User.builder().email("").name("login").build();
-        Set<ConstraintViolation<User>> violations = validator.validate(userWithEmptyMail);
+        UserDto userWithEmptyMail = UserDto.builder().email("").name("login").build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithEmptyMail, CreateValidation.class);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
 
-        User userWithBlankMail = User.builder().email("   ").name("login").build();
-        violations = validator.validate(userWithBlankMail);
-        assertEquals(2, violations.size());
+        UserDto userWithBlankMail = UserDto.builder().email("   ").name("login").build();
+        violations = validator.validate(userWithBlankMail, CreateValidation.class);
+        assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("email")));
     }
 
     @Test
     void shouldBeFailedIfNameIsNull() {
-        User userWithNullName = User.builder().email("test@mail.com").name(null).build();
-        Set<ConstraintViolation<User>> violations = validator.validate(userWithNullName);
-        assertEquals(2, violations.size());
+        UserDto userWithNullName = UserDto.builder().email("test@mail.com").name(null).build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithNullName, CreateValidation.class);
+        assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("name")));
     }
 
     @Test
     void shouldBeFailedIfLoginIsBlank() {
-        User userWithSpacesName = User.builder().email("test@mail.com").name("   ").build();
-        Set<ConstraintViolation<User>> violations = validator.validate(userWithSpacesName);
+        UserDto userWithSpacesName = UserDto.builder().email("test@mail.com").name("   ").build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithSpacesName, CreateValidation.class);
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("name")));
     }
 
     @Test
     void shouldBeFailedIfLoginIsEmpty() {
-        User userWithEmptyName = User.builder().email("test@mail.com").name("").build();
-        Set<ConstraintViolation<User>> violations = validator.validate(userWithEmptyName);
+        UserDto userWithEmptyName = UserDto.builder().email("test@mail.com").name("").build();
+        Set<ConstraintViolation<UserDto>> violations = validator.validate(userWithEmptyName, CreateValidation.class);
         assertEquals(1, violations.size());
     }
 }
