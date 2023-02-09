@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
-public class InMemoryItemRepository implements ItemService {
+public class InMemoryItemRepository implements ItemRepository {
     private final UserRepository userRepository;
     private final Map<Long, Map<Long, Item>> itemsByUser = new HashMap<>();
     private long lastId = 0;
