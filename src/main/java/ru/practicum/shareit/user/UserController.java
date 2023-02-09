@@ -11,6 +11,7 @@ import ru.practicum.shareit.utils.validation.CreateValidation;
 import ru.practicum.shareit.utils.validation.UpdateValidation;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.utils.validation.ValidationUtil.checkErrors;
 
@@ -22,30 +23,30 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/{id}")
-    public User get(@PathVariable Long id) {
+    public UserDto get(@PathVariable Long id) {
         log.info("Запрос на получение пользователя по id {}", id);
-        return userService.get(id);
+        return UserMapper.toUserDto(userService.get(id));
     }
 
     @GetMapping
-    public Collection<User> findAll() {
+    public Collection<UserDto> findAll() {
         log.info("Запрос на получение всех пользователей");
-        return userService.getAll();
+        return userService.getAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     @PostMapping
-    public User create(@Validated(CreateValidation.class) @RequestBody UserDto userDetails, BindingResult errors) {
+    public UserDto create(@Validated(CreateValidation.class) @RequestBody UserDto userDetails, BindingResult errors) {
         checkErrors(errors);
         log.info("Запрос на создание пользователя {}", userDetails.getEmail());
-        return userService.create(UserMapper.toUser(userDetails));
+        return UserMapper.toUserDto(userService.create(UserMapper.toUser(userDetails)));
     }
 
     @PatchMapping("/{userId}")
-    public User update(@PathVariable Long userId,
-                       @Validated(UpdateValidation.class) @RequestBody UserDto userDto, BindingResult errors) {
+    public UserDto update(@PathVariable Long userId,
+                          @Validated(UpdateValidation.class) @RequestBody UserDto userDto, BindingResult errors) {
         checkErrors(errors);
         log.info("Запрос на обновление пользователя {}", userDto.getEmail());
-        return userService.update(UserMapper.toUser(userId, userDto));
+        return UserMapper.toUserDto(userService.update(UserMapper.toUser(userId, userDto)));
     }
 
     @DeleteMapping("/{id}")
