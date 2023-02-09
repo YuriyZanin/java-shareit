@@ -50,7 +50,8 @@ public class InMemoryItemRepository implements ItemRepository {
     @Override
     public Item get(Long userId, Long itemId) {
         userRepository.get(userId);
-        return itemsByUser.values().stream().flatMap(u -> u.values().stream()).filter(item -> item.getId() == itemId)
+        return itemsByUser.values().stream().flatMap(u -> u.values().stream())
+                .filter(item -> Objects.equals(item.getId(), itemId))
                 .findFirst().orElseThrow(() -> new NotFoundException(String.format("Вещь с id %d не найдена", itemId)));
     }
 
