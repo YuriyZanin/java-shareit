@@ -26,14 +26,4 @@ public class UserMapper {
                 .email(userDto.getEmail())
                 .build();
     }
-
-    public static User updateFrom(User actual, User updated) {
-        if (updated.getName() != null) {
-            actual.setName(updated.getName());
-        }
-        if (updated.getEmail() != null) {
-            actual.setEmail(updated.getEmail());
-        }
-        return actual;
-    }
 }

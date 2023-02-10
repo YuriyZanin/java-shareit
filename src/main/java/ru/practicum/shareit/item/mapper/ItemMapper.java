@@ -30,18 +30,4 @@ public class ItemMapper {
                 .available(itemDto.getAvailable())
                 .build();
     }
-
-    // Изменить можно название, описание и статус доступа к аренде
-    public static Item updateFrom(Item actual, Item updated) {
-        if (updated.getName() != null) {
-            actual.setName(updated.getName());
-        }
-        if (updated.getAvailable() != null) {
-            actual.setAvailable(updated.getAvailable());
-        }
-        if (updated.getDescription() != null) {
-            actual.setDescription(updated.getDescription());
-        }
-        return actual;
-    }
 }

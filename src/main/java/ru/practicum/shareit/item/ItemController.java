@@ -34,7 +34,7 @@ public class ItemController {
     @PatchMapping("/{itemId}")
     public ItemDto update(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
                           @Validated(UpdateValidation.class) @RequestBody ItemDto itemDetails) {
-        log.info("Запрос на изменение {} у пользователя с id {}", itemDetails.getName(), userId);
+        log.info("Запрос на изменение {} у пользователя с id {}", itemDetails.toString(), userId);
         return ItemMapper.toItemDto(itemService.update(userId, ItemMapper.toItem(itemId, itemDetails)));
     }
 
@@ -47,7 +47,7 @@ public class ItemController {
     @GetMapping
     public List<ItemDto> findByUser(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Запрос всех вещей у пользователя с id {}", userId);
-        return itemService.getByUser(userId).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return itemService.getAllByUser(userId).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @GetMapping("/search")

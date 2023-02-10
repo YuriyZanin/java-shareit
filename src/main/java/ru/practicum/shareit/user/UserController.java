@@ -46,7 +46,7 @@ public class UserController {
     public UserDto update(@PathVariable Long userId,
                           @Validated(UpdateValidation.class) @RequestBody UserDto userDto, BindingResult errors) {
         checkErrors(errors);
-        log.info("Запрос на обновление пользователя {}", userDto.getEmail());
+        log.info("Запрос на обновление пользователя {}", userDto.toString());
         return UserMapper.toUserDto(userService.update(UserMapper.toUser(userId, userDto)));
     }
 

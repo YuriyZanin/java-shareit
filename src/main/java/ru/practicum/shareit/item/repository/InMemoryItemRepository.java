@@ -2,10 +2,7 @@ package ru.practicum.shareit.item.repository;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.*;
@@ -19,12 +16,9 @@ public class InMemoryItemRepository implements ItemRepository {
     private long lastId = 0;
 
     @Override
-    public Item create(Long userId, Item item) {
-        User owner = userRepository.get(userId);
+    public Item create(Item item) {
         item.setId(getId());
-        item.setOwner(owner);
-
-        itemsByUser.compute(userId, (user, userItems) -> {
+        itemsByUser.compute(item.getOwner().getId(), (user, userItems) -> {
             if (userItems == null) {
                 userItems = new HashMap<>();
             }
@@ -35,28 +29,29 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public Item update(Long userId, Item item) {
-        User owner = userRepository.get(userId);
-        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(item.getId())) {
-            Item actual = itemsByUser.get(userId).get(item.getId());
-            itemsByUser.get(userId).put(item.getId(), ItemMapper.updateFrom(actual, item));
-            return actual;
+    public Item update(Item item) {
+        itemsByUser.get(item.getOwner().getId()).put(item.getId(), item);
+        return item;
+    }
+
+    @Override
+    public Optional<Item> get(Long itemId) {
+        return itemsByUser.values().stream().flatMap(u -> u.values().stream())
+                .filter(item -> Objects.equals(item.getId(), itemId))
+                .findFirst();
+    }
+
+    @Override
+    public Optional<Item> getByUser(Long userId, Long itemId) {
+        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(itemId)) {
+            return Optional.of(itemsByUser.get(userId).get(itemId));
         } else {
-            throw new NotFoundException(
-                    String.format("У пользователя %s нет вещи с id %d", owner.getEmail(), item.getId()));
+            return Optional.empty();
         }
     }
 
     @Override
-    public Item get(Long userId, Long itemId) {
-        userRepository.get(userId);
-        return itemsByUser.values().stream().flatMap(u -> u.values().stream())
-                .filter(item -> Objects.equals(item.getId(), itemId))
-                .findFirst().orElseThrow(() -> new NotFoundException(String.format("Вещь с id %d не найдена", itemId)));
-    }
-
-    @Override
-    public List<Item> getByUser(Long userId) {
+    public List<Item> getAllByUser(Long userId) {
         userRepository.get(userId);
         if (itemsByUser.get(userId) == null)
             return Collections.emptyList();
@@ -64,8 +59,7 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public List<Item> getByText(Long userId, String text) {
-        userRepository.get(userId);
+    public List<Item> getByText(String text) {
         if (text.isBlank()) {
             return Collections.emptyList();
         }
@@ -75,12 +69,11 @@ public class InMemoryItemRepository implements ItemRepository {
     }
 
     @Override
-    public void delete(Long userId, Long itemId) {
-        User owner = userRepository.get(userId);
-        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(itemId)) {
-            itemsByUser.get(userId).remove(itemId);
+    public boolean delete(Long userId, Long itemId) {
+        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(itemId)){
+            return itemsByUser.get(userId).remove(itemId) != null;
         } else {
-            throw new NotFoundException(String.format("У пользователя %s нет вещи с id %d", owner.getEmail(), itemId));
+            return false;
         }
     }
 
