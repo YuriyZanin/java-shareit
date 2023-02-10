@@ -1,8 +1,10 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.service;
+
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 
-public interface UserRepository {
+public interface UserService {
     User get(Long id);
 
     List<User> getAll();
@@ -12,4 +14,5 @@ public interface UserRepository {
     User update(User user);
 
     boolean delete(Long id);
+
 }

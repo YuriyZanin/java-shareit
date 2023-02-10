@@ -3,8 +3,8 @@ package ru.practicum.shareit.item;
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.AbstractValidationTest;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.utils.validation.CreateValidation;
-import ru.practicum.shareit.utils.validation.UpdateValidation;
+import ru.practicum.shareit.validation.CreateValidation;
+import ru.practicum.shareit.validation.UpdateValidation;
 
 import javax.validation.ConstraintViolation;
 import java.util.Set;

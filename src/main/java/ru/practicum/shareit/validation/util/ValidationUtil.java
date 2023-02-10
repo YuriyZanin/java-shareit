@@ -1,9 +1,9 @@
-package ru.practicum.shareit.utils.validation;
+package ru.practicum.shareit.validation.util;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import ru.practicum.shareit.utils.exception.ValidationException;
+import ru.practicum.shareit.exception.ValidationException;
 
 import java.util.List;
 import java.util.stream.Collectors;

@@ -7,13 +7,14 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.utils.validation.CreateValidation;
-import ru.practicum.shareit.utils.validation.UpdateValidation;
+import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.validation.CreateValidation;
+import ru.practicum.shareit.validation.UpdateValidation;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import static ru.practicum.shareit.utils.validation.ValidationUtil.checkErrors;
+import static ru.practicum.shareit.validation.util.ValidationUtil.checkErrors;
 
 @Slf4j
 @RestController
