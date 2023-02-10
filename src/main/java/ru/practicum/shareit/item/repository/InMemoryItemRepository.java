@@ -70,7 +70,7 @@ public class InMemoryItemRepository implements ItemRepository {
 
     @Override
     public boolean delete(Long userId, Long itemId) {
-        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(itemId)){
+        if (itemsByUser.containsKey(userId) && itemsByUser.get(userId).containsKey(itemId)) {
             return itemsByUser.get(userId).remove(itemId) != null;
         } else {
             return false;
