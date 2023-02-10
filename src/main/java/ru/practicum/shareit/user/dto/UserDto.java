@@ -15,11 +15,11 @@ import javax.validation.constraints.NotEmpty;
 @Builder
 @AllArgsConstructor
 public class UserDto {
-    private Long id;
+    private final Long id;
     @NotBlank (groups = CreateValidation.class)
     @NullOrNotBlank(groups = UpdateValidation.class)
-    private String name;
+    private final String name;
     @NotEmpty (groups = CreateValidation.class)
     @Email (groups = {CreateValidation.class, UpdateValidation.class})
-    private String email;
+    private final String email;
 }

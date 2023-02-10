@@ -14,14 +14,14 @@ import javax.validation.constraints.NotNull;
 @Builder
 @AllArgsConstructor
 public class ItemDto {
-    private Long id;
+    private final Long id;
     @NotBlank(groups = CreateValidation.class)
     @NullOrNotBlank(groups = UpdateValidation.class)
-    private String name;
+    private final String name;
     @NotBlank(groups = CreateValidation.class)
     @NullOrNotBlank(groups = UpdateValidation.class)
-    private String description;
+    private final String description;
     @NotNull(groups = CreateValidation.class)
-    private Boolean available;
-    private Long requestId;
+    private final Boolean available;
+    private final Long requestId;
 }
