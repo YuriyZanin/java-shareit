@@ -13,7 +13,7 @@ public interface ItemService {
 
     List<Item> getAllByUser(Long userId);
 
-    boolean delete(Long userId, Long itemId);
+    void delete(Long userId, Long itemId);
 
     List<Item> getByText(Long userId, String text);
 }

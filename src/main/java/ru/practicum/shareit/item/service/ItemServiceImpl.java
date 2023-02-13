@@ -58,8 +58,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public boolean delete(Long userId, Long itemId) {
-        return itemRepository.delete(userId, itemId);
+    public void delete(Long userId, Long itemId) {
+        itemRepository.delete(userId, itemId);
     }
 
     @Override

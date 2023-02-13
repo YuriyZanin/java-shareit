@@ -49,8 +49,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean delete(Long id) {
-        return userRepository.delete(id);
+    public void delete(Long id) {
+        userRepository.delete(id);
     }
 
     private void checkEmailDuplicated(String email) {

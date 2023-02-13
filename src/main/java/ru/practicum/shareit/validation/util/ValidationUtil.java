@@ -10,11 +10,11 @@ import java.util.stream.Collectors;
 
 @UtilityClass
 public class ValidationUtil {
-    public static String buildErrorString(FieldError error) {
+    private static String buildErrorString(FieldError error) {
         return String.format("Поле %s содержит ошибку: \"%s\"", error.getField(), error.getDefaultMessage());
     }
 
-    public static String buildErrorMessage(List<FieldError> errors) {
+    private static String buildErrorMessage(List<FieldError> errors) {
         return errors.stream()
                 .map(ValidationUtil::buildErrorString)
                 .collect(Collectors.joining("\n "));
