@@ -6,27 +6,28 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
-import ru.practicum.shareit.user.service.UserService;
+import ru.practicum.shareit.user.repository.UserRepository;
 
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
-    private final UserService userService;
     private final ItemRepository itemRepository;
+    private final UserRepository userRepository;
 
     @Override
     public Item create(Long userId, Item item) {
-        User owner = userService.get(userId);
+        User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
         item.setOwner(owner);
-        return itemRepository.create(item);
+        return itemRepository.save(item);
     }
 
     @Override
     public Item update(Long userId, Item item) {
-        User owner = userService.get(userId);
-        Item actual = itemRepository.getByUser(userId, item.getId()).orElseThrow(() -> {
+        User owner = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        Item actual = itemRepository.findByIdAndOwnerId(item.getId(), userId).orElseThrow(() -> {
             throw new NotFoundException(
                     String.format("У пользователя %s нет вещи с id %d", owner.getName(), item.getId()));
         });
@@ -41,30 +42,33 @@ public class ItemServiceImpl implements ItemService {
         if (item.getDescription() != null) {
             actual.setDescription(item.getDescription());
         }
-        return itemRepository.update(actual);
+        return itemRepository.save(actual);
     }
 
     @Override
     public Item get(Long userId, Long itemId) {
-        userService.get(userId);
-        return itemRepository.get(itemId).orElseThrow(() -> {
+        userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        return itemRepository.findById(itemId).orElseThrow(() -> {
             throw new NotFoundException(String.format("Вещь с id %d не найдена", itemId));
         });
     }
 
     @Override
     public List<Item> getAllByUser(Long userId) {
-        return itemRepository.getAllByUser(userId);
+        return itemRepository.findByOwnerId(userId);
     }
 
     @Override
     public void delete(Long userId, Long itemId) {
-        itemRepository.delete(userId, itemId);
+        itemRepository.deleteByIdAndOwnerId(itemId, userId);
     }
 
     @Override
     public List<Item> getByText(Long userId, String text) {
-        userService.get(userId);
-        return itemRepository.getByText(text);
+        userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
+        if (text.isBlank()) {
+            return Collections.emptyList();
+        }
+        return itemRepository.searchByText(text);
     }
 }

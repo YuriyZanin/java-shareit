@@ -17,20 +17,20 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User get(Long id) {
-        return userRepository.get(id).orElseThrow(() -> {
+        return userRepository.findById(id).orElseThrow(() -> {
             throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
         });
     }
 
     @Override
     public List<User> getAll() {
-        return userRepository.getAll();
+        return userRepository.findAll();
     }
 
     @Override
     public User create(User user) {
         checkEmailDuplicated(user.getEmail());
-        return userRepository.create(user);
+        return userRepository.save(user);
     }
 
     @Override
@@ -45,16 +45,16 @@ public class UserServiceImpl implements UserService {
         if (user.getEmail() != null) {
             actual.setEmail(user.getEmail());
         }
-        return userRepository.update(actual);
+        return userRepository.save(actual);
     }
 
     @Override
     public void delete(Long id) {
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 
     private void checkEmailDuplicated(String email) {
-        Optional<User> user = userRepository.getByEmail(email);
+        Optional<User> user = userRepository.findUserByEmail(email);
         if (user.isPresent()) {
             throw new AlreadyExistException(String.format("Пользователь с email %s уже есть в базе", email));
         }
