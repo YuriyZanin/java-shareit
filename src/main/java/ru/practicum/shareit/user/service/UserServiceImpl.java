@@ -29,7 +29,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User user) {
-        checkEmailDuplicated(user.getEmail());
         return userRepository.save(user);
     }
 

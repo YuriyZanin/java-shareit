@@ -19,6 +19,7 @@ public class Item {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     private User owner;
-    @Transient
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "request_id", referencedColumnName = "id")
     private ItemRequest request;
 }

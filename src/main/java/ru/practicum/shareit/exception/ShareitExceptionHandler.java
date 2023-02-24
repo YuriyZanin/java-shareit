@@ -33,7 +33,7 @@ public class ShareitExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
-        String message = "Произошла непредвиденная ошибка.";
+        String message = "Произошла непредвиденная ошибка: " + e.getMessage();
         log.error(message);
         return new ErrorResponse(message);
     }
