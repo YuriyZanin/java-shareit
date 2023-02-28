@@ -17,11 +17,11 @@ public class Item {
     private String name;
     private String description;
     private Boolean available;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "owner_id", nullable = false)
     private User owner;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "request_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "request_id")
     private ItemRequest request;
     @OneToMany(mappedBy = "item")
     private List<Comment> comments;

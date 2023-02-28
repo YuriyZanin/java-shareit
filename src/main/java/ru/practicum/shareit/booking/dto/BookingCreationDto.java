@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Builder
 @RequiredArgsConstructor
 @EndDateAfterStartDate
-public class BookingDto {
+public class BookingCreationDto {
     @NotNull
     private final Long itemId;
     @FutureOrPresent

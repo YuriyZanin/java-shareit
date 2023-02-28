@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.service.BookingService;
@@ -22,7 +22,7 @@ public class BookingController {
 
     @PostMapping
     public BookingFullDto create(@RequestHeader("X-Sharer-User-Id") long userId,
-                                 @Valid @RequestBody BookingDto bookingDetails, BindingResult errors) {
+                                 @Valid @RequestBody BookingCreationDto bookingDetails, BindingResult errors) {
         ValidationUtil.checkErrors(errors);
         log.info("Запрос на добавление {}", bookingDetails.toString());
         return bookingService.create(userId, bookingDetails);

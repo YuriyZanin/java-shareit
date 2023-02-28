@@ -17,8 +17,8 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "item_id", nullable = false)
     private Item item;
-    @OneToOne
-    @JoinColumn(name = "author_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "author_id", nullable = false)
     private User author;
     @Column(name = "created_date", nullable = false)
     private LocalDateTime created;

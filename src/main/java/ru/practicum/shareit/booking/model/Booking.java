@@ -18,11 +18,11 @@ public class Booking {
     private LocalDateTime start;
     @Column(name = "end_date", nullable = false)
     private LocalDateTime end;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "item_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "item_id", nullable = false)
     private Item item;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "booker_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "booker_id", nullable = false)
     private User booker;
     @Enumerated(EnumType.STRING)
     private Status status;

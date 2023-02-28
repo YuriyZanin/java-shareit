@@ -3,7 +3,7 @@ package ru.practicum.shareit.booking.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
@@ -31,7 +31,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemRepository itemRepository;
 
     @Override
-    public BookingFullDto create(long userId, BookingDto bookingDetails) {
+    public BookingFullDto create(long userId, BookingCreationDto bookingDetails) {
         User user = getUser(userId);
         Item item = itemRepository.findByIdAndOwnerIdNot(bookingDetails.getItemId(), userId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
@@ -83,7 +83,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Collection<BookingFullDto> getAllByState(long userId, State state) {
         getUser(userId);
-        Collection<Booking> bookings = bookingRepository.findAllByBookerId(
+        List<Booking> bookings = bookingRepository.findAllByBookerId(
                 userId, Sort.by("start").descending());
         return doFilterByState(bookings, state).stream()
                 .map(BookingMapper::toBookingFullDto)
@@ -93,10 +93,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public Collection<BookingFullDto> getAllByOwnerAndState(long userId, State state) {
         getUser(userId);
-        List<Item> items = itemRepository.findByOwnerId(userId);
-        Collection<Booking> bookings = bookingRepository.findAllByItemIdIn(items.stream()
-                .map(Item::getId)
-                .collect(Collectors.toList()), Sort.by("start").descending());
+        List<Booking> bookings = bookingRepository.findAllByOwner(userId);
         return doFilterByState(bookings, state).stream()
                 .map(BookingMapper::toBookingFullDto)
                 .collect(Collectors.toList());

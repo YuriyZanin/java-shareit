@@ -1,6 +1,6 @@
 package ru.practicum.shareit.item.mapper;
 
-import ru.practicum.shareit.booking.dto.BookingShortDto;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemFullDto;
@@ -28,10 +28,10 @@ public class ItemMapper {
                 item.getOwner().getId(),
                 item.getRequest() != null ? item.getRequest().getId() : null,
                 last != null
-                        ? BookingShortDto.builder().id(last.getId()).bookerId(last.getBooker().getId()).build()
+                        ? BookingMapper.toBookingShorDto(last)
                         : null,
                 next != null
-                        ? BookingShortDto.builder().id(next.getId()).bookerId(next.getBooker().getId()).build()
+                        ? BookingMapper.toBookingShorDto(next)
                         : null,
                 item.getComments() != null
                         ? item.getComments().stream().map(CommentMapper::toCommentFullDto).collect(Collectors.toList())

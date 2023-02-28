@@ -16,7 +16,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public User get(Long id) {
+    public User get(long id) {
         return userRepository.findById(id).orElseThrow(() -> {
             throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
         });
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(long id) {
         userRepository.deleteById(id);
     }
 

@@ -20,8 +20,8 @@ public class ItemRequest {
     private Long id;
     @Column(nullable = false)
     private String description;
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "requester_id", referencedColumnName = "id")
+    @ManyToOne
+    @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
     @Column(name = "create_date", nullable = false)
     private LocalDate created;

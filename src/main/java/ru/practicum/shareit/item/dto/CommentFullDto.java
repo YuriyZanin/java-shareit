@@ -7,7 +7,10 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
-@Getter @Setter @RequiredArgsConstructor @Builder
+@Getter
+@Setter
+@RequiredArgsConstructor
+@Builder
 public class CommentFullDto {
     private final Long id;
     private final String text;
