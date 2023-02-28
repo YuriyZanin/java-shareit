@@ -5,6 +5,7 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "items", schema = "public")
@@ -22,4 +23,6 @@ public class Item {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "request_id", referencedColumnName = "id")
     private ItemRequest request;
+    @OneToMany(mappedBy = "item")
+    private List<Comment> comments;
 }

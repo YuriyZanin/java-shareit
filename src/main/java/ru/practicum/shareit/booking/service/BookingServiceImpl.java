@@ -31,7 +31,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingFullDto create(long userId, BookingDto bookingDetails) {
         User user = getUser(userId);
-        Item item = getItem(bookingDetails.getItemId());
+        Item item = getItem(bookingDetails.getItemId(), userId);
         if (!item.getAvailable()) {
             throw new ValidationException("Вещь не доступна для бронирования");
         }
@@ -98,8 +98,8 @@ public class BookingServiceImpl implements BookingService {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
-    private Item getItem(long itemId) {
-        return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Вещь не найдена"));
+    private Item getItem(long itemId, long userId) {
+        return itemRepository.findByIdAndOwnerIdNot(itemId, userId).orElseThrow(() -> new NotFoundException("Вещь не найдена"));
     }
 
     private Collection<Booking> getByState(Collection<Booking> bookings, String state) {
@@ -109,7 +109,6 @@ public class BookingServiceImpl implements BookingService {
                 return bookings;
             case "CURRENT":
                 return bookings.stream()
-                        .filter(b -> b.getStatus().equals(Status.APPROVED))
                         .filter(b -> now.isAfter(b.getStart()) && now.isBefore(b.getEnd()))
                         .collect(Collectors.toList());
             case "PAST":

@@ -5,12 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentFullDto;
+import ru.practicum.shareit.item.dto.CommentShortDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemFullDto;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.validation.CreateValidation;
 import ru.practicum.shareit.validation.UpdateValidation;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,15 +43,15 @@ public class ItemController {
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto get(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
+    public ItemFullDto get(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
         log.info("Запрос вещи с id {} у пользователя с id {}", itemId, userId);
-        return ItemMapper.toItemDto(itemService.get(userId, itemId));
+        return itemService.get(userId, itemId);
     }
 
     @GetMapping
-    public List<ItemDto> findByUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemFullDto> findByUser(@RequestHeader("X-Sharer-User-Id") long userId) {
         log.info("Запрос всех вещей у пользователя с id {}", userId);
-        return itemService.getAllByUser(userId).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return itemService.getAllByUser(userId);
     }
 
     @GetMapping("/search")
@@ -61,5 +65,13 @@ public class ItemController {
     public void delete(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId) {
         log.info("Запрос на удаление вещи с id {} у пользователя с id {}", itemId, userId);
         itemService.delete(userId, itemId);
+    }
+
+    @PostMapping("/{itemId}/comment")
+    public CommentFullDto addComment(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
+                                     @Valid @RequestBody CommentShortDto comment, BindingResult errors) {
+        checkErrors(errors);
+        log.info("Запрос на добавление комментария к вещи с id {}", itemId);
+        return itemService.addComment(userId, itemId, comment);
     }
 }
