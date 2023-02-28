@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
+import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
@@ -18,6 +19,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,7 +33,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingFullDto create(long userId, BookingDto bookingDetails) {
         User user = getUser(userId);
-        Item item = getItem(bookingDetails.getItemId(), userId);
+        Item item = itemRepository.findByIdAndOwnerIdNot(bookingDetails.getItemId(), userId)
+                .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
         if (!item.getAvailable()) {
             throw new ValidationException("Вещь не доступна для бронирования");
         }
@@ -78,53 +81,58 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public Collection<BookingFullDto> getAllWithState(long userId, String state) {
+    public Collection<BookingFullDto> getAllByState(long userId, State state) {
         getUser(userId);
-        Collection<Booking> bookings = bookingRepository.findAllByBookerId(userId, Sort.by("start").descending());
-        return getByState(bookings, state).stream().map(BookingMapper::toBookingFullDto).collect(Collectors.toList());
+        Collection<Booking> bookings = bookingRepository.findAllByBookerId(
+                userId, Sort.by("start").descending());
+        return doFilterByState(bookings, state).stream()
+                .map(BookingMapper::toBookingFullDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Collection<BookingFullDto> getAllByOwnerWithState(long userId, String state) {
+    public Collection<BookingFullDto> getAllByOwnerAndState(long userId, State state) {
         getUser(userId);
         List<Item> items = itemRepository.findByOwnerId(userId);
         Collection<Booking> bookings = bookingRepository.findAllByItemIdIn(items.stream()
                 .map(Item::getId)
                 .collect(Collectors.toList()), Sort.by("start").descending());
-        return getByState(bookings, state).stream().map(BookingMapper::toBookingFullDto).collect(Collectors.toList());
+        return doFilterByState(bookings, state).stream()
+                .map(BookingMapper::toBookingFullDto)
+                .collect(Collectors.toList());
     }
 
     private User getUser(long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 
-    private Item getItem(long itemId, long userId) {
-        return itemRepository.findByIdAndOwnerIdNot(itemId, userId).orElseThrow(() -> new NotFoundException("Вещь не найдена"));
-    }
-
-    private Collection<Booking> getByState(Collection<Booking> bookings, String state) {
+    private Collection<Booking> doFilterByState(Collection<Booking> bookings, State state) {
         LocalDateTime now = LocalDateTime.now();
         switch (state) {
-            case "ALL":
+            case ALL:
                 return bookings;
-            case "CURRENT":
+            case CURRENT:
                 return bookings.stream()
                         .filter(b -> now.isAfter(b.getStart()) && now.isBefore(b.getEnd()))
                         .collect(Collectors.toList());
-            case "PAST":
-                return bookings.stream().filter(b -> now.isAfter(b.getEnd()))
+            case PAST:
+                return bookings.stream()
+                        .filter(b -> now.isAfter(b.getEnd()))
                         .collect(Collectors.toList());
-            case "FUTURE":
-                return bookings.stream().filter(b -> now.isBefore(b.getStart()))
+            case FUTURE:
+                return bookings.stream()
+                        .filter(b -> now.isBefore(b.getStart()))
                         .collect(Collectors.toList());
-            case "WAITING":
-                return bookings.stream().filter(b -> b.getStatus().equals(Status.WAITING))
+            case WAITING:
+                return bookings.stream()
+                        .filter(b -> b.getStatus().equals(Status.WAITING))
                         .collect(Collectors.toList());
-            case "REJECTED":
-                return bookings.stream().filter(b -> b.getStatus().equals(Status.REJECTED))
+            case REJECTED:
+                return bookings.stream()
+                        .filter(b -> b.getStatus().equals(Status.REJECTED))
                         .collect(Collectors.toList());
             default:
-                throw new ValidationException("Unknown state: " + state);
+                return Collections.emptyList();
         }
     }
 }

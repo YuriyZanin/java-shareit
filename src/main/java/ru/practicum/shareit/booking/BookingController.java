@@ -6,6 +6,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
+import ru.practicum.shareit.booking.model.State;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.validation.util.ValidationUtil;
 
@@ -45,13 +46,13 @@ public class BookingController {
     public Collection<BookingFullDto> findAllByState(@RequestHeader("X-Sharer-User-Id") long userId,
                                                      @RequestParam(defaultValue = "ALL") String state) {
         log.info("Запрос на получение списка всех бронирований текущего пользователя");
-        return bookingService.getAllWithState(userId, state);
+        return bookingService.getAllByState(userId, State.parseString(state));
     }
 
     @GetMapping("/owner")
     public Collection<BookingFullDto> findAllByOwnerWithState(@RequestHeader("X-Sharer-User-Id") long userId,
                                                               @RequestParam(defaultValue = "ALL") String state) {
         log.info("Запрос на получение списка бронирований для всех вещей текущего пользователя");
-        return bookingService.getAllByOwnerWithState(userId, state);
+        return bookingService.getAllByOwnerAndState(userId, State.parseString(state));
     }
 }

@@ -17,6 +17,13 @@ public class ShareitExceptionHandler {
     }
 
     @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
+        log.error(e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handelNotFoundException(final NotFoundException e) {
         log.error(e.getMessage());
