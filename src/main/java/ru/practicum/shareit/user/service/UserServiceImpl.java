@@ -2,6 +2,7 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.user.model.User;
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     @Override
     public User get(long id) {
         return userRepository.findById(id).orElseThrow(() -> {
@@ -22,6 +24,7 @@ public class UserServiceImpl implements UserService {
         });
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<User> getAll() {
         return userRepository.findAll();

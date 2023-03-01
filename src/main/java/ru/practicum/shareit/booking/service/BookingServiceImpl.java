@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
@@ -66,6 +67,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingFullDto(bookingRepository.save(booking));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public BookingFullDto get(long userId, long bookingId) {
         User user = getUser(userId);
@@ -80,6 +82,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingFullDto(booking);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Collection<BookingFullDto> getAllByState(long userId, State state) {
         getUser(userId);
@@ -90,6 +93,7 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Collection<BookingFullDto> getAllByOwnerAndState(long userId, State state) {
         getUser(userId);

@@ -3,6 +3,7 @@ package ru.practicum.shareit.item.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -60,6 +61,7 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.save(actual);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public ItemFullDto get(long userId, long itemId) {
         getUser(userId);
@@ -76,6 +78,7 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<ItemFullDto> getAllByUser(long userId) {
         getUser(userId);
@@ -104,6 +107,7 @@ public class ItemServiceImpl implements ItemService {
         itemRepository.deleteByIdAndOwnerId(itemId, userId);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Item> getByText(long userId, String text) {
         getUser(userId);
