@@ -11,6 +11,7 @@ import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.CommentFullDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemFullDto;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
@@ -36,32 +37,33 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional
     @Override
-    public Item create(long userId, Item item) {
+    public ItemFullDto create(long userId, ItemDto itemDetails) {
         User owner = getUser(userId);
+        Item item = ItemMapper.toItem(itemDetails);
         item.setOwner(owner);
-        return itemRepository.save(item);
+        return ItemMapper.toItemFullDto(itemRepository.save(item), null, null);
     }
 
     @Transactional
     @Override
-    public Item update(long userId, Item item) {
+    public ItemFullDto update(long userId, long itemId, ItemDto itemDetails) {
         User owner = getUser(userId);
-        Item actual = itemRepository.findByIdAndOwnerId(item.getId(), userId).orElseThrow(() -> {
+        Item actual = itemRepository.findByIdAndOwnerId(itemId, userId).orElseThrow(() -> {
             throw new NotFoundException(
-                    String.format("У пользователя %s нет вещи с id %d", owner.getName(), item.getId()));
+                    String.format("У пользователя %s нет вещи с id %d", owner.getName(), itemId));
         });
 
         // Изменить можно название, описание и статус доступа к аренде
-        if (item.getName() != null) {
-            actual.setName(item.getName());
+        if (itemDetails.getName() != null) {
+            actual.setName(itemDetails.getName());
         }
-        if (item.getAvailable() != null) {
-            actual.setAvailable(item.getAvailable());
+        if (itemDetails.getAvailable() != null) {
+            actual.setAvailable(itemDetails.getAvailable());
         }
-        if (item.getDescription() != null) {
-            actual.setDescription(item.getDescription());
+        if (itemDetails.getDescription() != null) {
+            actual.setDescription(itemDetails.getDescription());
         }
-        return itemRepository.save(actual);
+        return ItemMapper.toItemFullDto(itemRepository.save(actual), null, null);
     }
 
     @Override
@@ -110,12 +112,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> getByText(long userId, String text) {
+    public List<ItemFullDto> getByText(long userId, String text) {
         getUser(userId);
         if (text.isBlank()) {
             return Collections.emptyList();
         }
-        return itemRepository.searchByText(text);
+        return itemRepository.searchByText(text).stream()
+                .map(i -> ItemMapper.toItemFullDto(i, null, null)).collect(Collectors.toList());
     }
 
     @Transactional

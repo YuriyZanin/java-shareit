@@ -9,14 +9,12 @@ import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.CommentFullDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemFullDto;
-import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.validation.CreateValidation;
 import ru.practicum.shareit.validation.UpdateValidation;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static ru.practicum.shareit.validation.util.ValidationUtil.checkErrors;
 
@@ -28,18 +26,18 @@ public class ItemController {
     public final ItemService itemService;
 
     @PostMapping
-    public ItemDto create(@RequestHeader("X-Sharer-User-Id") long userId,
-                          @Validated(CreateValidation.class) @RequestBody ItemDto itemDetails, BindingResult errors) {
+    public ItemFullDto create(@RequestHeader("X-Sharer-User-Id") long userId,
+                              @Validated(CreateValidation.class) @RequestBody ItemDto itemDetails, BindingResult errors) {
         checkErrors(errors);
         log.info("Запрос на добавление {}", itemDetails.getName());
-        return ItemMapper.toItemDto(itemService.create(userId, ItemMapper.toItem(itemDetails)));
+        return itemService.create(userId, itemDetails);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto update(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
-                          @Validated(UpdateValidation.class) @RequestBody ItemDto itemDetails) {
+    public ItemFullDto update(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
+                              @Validated(UpdateValidation.class) @RequestBody ItemDto itemDetails) {
         log.info("Запрос на изменение {} у пользователя с id {}", itemDetails.toString(), userId);
-        return ItemMapper.toItemDto(itemService.update(userId, ItemMapper.toItem(itemId, itemDetails)));
+        return itemService.update(userId, itemId, itemDetails);
     }
 
     @GetMapping("/{itemId}")
@@ -55,10 +53,10 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> findByNameAndDescription(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                  @RequestParam String text) {
+    public List<ItemFullDto> findByNameAndDescription(@RequestHeader("X-Sharer-User-Id") long userId,
+                                                      @RequestParam String text) {
         log.info("Запрос на поиск вещей содержащих: {}", text);
-        return itemService.getByText(userId, text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return itemService.getByText(userId, text);
     }
 
     @DeleteMapping("/{itemId}")

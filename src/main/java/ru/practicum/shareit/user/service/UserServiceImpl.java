@@ -5,11 +5,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -18,37 +21,41 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public User get(long id) {
-        return userRepository.findById(id).orElseThrow(() -> {
+    public UserDto get(long id) {
+        User created = userRepository.findById(id).orElseThrow(() -> {
             throw new NotFoundException(String.format("Пользователь с id %d не найден", id));
         });
+        return UserMapper.toUserDto(created);
     }
 
     @Override
-    public List<User> getAll() {
-        return userRepository.findAll();
-    }
-
-    @Transactional
-    @Override
-    public User create(User user) {
-        return userRepository.save(user);
+    public List<UserDto> getAll() {
+        return userRepository.findAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     @Transactional
     @Override
-    public User update(User user) {
-        User actual = get(user.getId());
-        if (user.getEmail() != null && !actual.getEmail().equals(user.getEmail())) {
-            checkEmailDuplicated(user.getEmail());
+    public UserDto create(UserDto userDetails) {
+        User user = UserMapper.toUser(userDetails);
+        return UserMapper.toUserDto(userRepository.save(user));
+    }
+
+    @Transactional
+    @Override
+    public UserDto update(long userId, UserDto userDetails) {
+        User actual = userRepository.findById(userId).orElseThrow(() -> {
+            throw new NotFoundException(String.format("Пользователь с id %d не найден", userId));
+        });
+        if (userDetails.getEmail() != null && !actual.getEmail().equals(userDetails.getEmail())) {
+            checkEmailDuplicated(userDetails.getEmail());
         }
-        if (user.getName() != null) {
-            actual.setName(user.getName());
+        if (userDetails.getName() != null) {
+            actual.setName(userDetails.getName());
         }
-        if (user.getEmail() != null) {
-            actual.setEmail(user.getEmail());
+        if (userDetails.getEmail() != null) {
+            actual.setEmail(userDetails.getEmail());
         }
-        return userRepository.save(actual);
+        return UserMapper.toUserDto(userRepository.save(actual));
     }
 
     @Transactional
