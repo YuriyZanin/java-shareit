@@ -12,11 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
-    @Transactional(readOnly = true)
     @Override
     public User get(long id) {
         return userRepository.findById(id).orElseThrow(() -> {
@@ -24,17 +24,18 @@ public class UserServiceImpl implements UserService {
         });
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<User> getAll() {
         return userRepository.findAll();
     }
 
+    @Transactional
     @Override
     public User create(User user) {
         return userRepository.save(user);
     }
 
+    @Transactional
     @Override
     public User update(User user) {
         User actual = get(user.getId());
@@ -50,6 +51,7 @@ public class UserServiceImpl implements UserService {
         return userRepository.save(actual);
     }
 
+    @Transactional
     @Override
     public void delete(long id) {
         userRepository.deleteById(id);

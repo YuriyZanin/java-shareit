@@ -24,12 +24,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
 
+    @Transactional
     @Override
     public BookingFullDto create(long userId, BookingCreationDto bookingDetails) {
         User user = getUser(userId);
@@ -42,6 +44,7 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingFullDto(bookingRepository.save(booking));
     }
 
+    @Transactional
     @Override
     public BookingFullDto approveStatus(long userId, long bookingId, boolean approved) {
         User owner = getUser(userId);
@@ -66,7 +69,6 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingFullDto(bookingRepository.save(booking));
     }
 
-    @Transactional(readOnly = true)
     @Override
     public BookingFullDto get(long userId, long bookingId) {
         User user = getUser(userId);
@@ -81,7 +83,6 @@ public class BookingServiceImpl implements BookingService {
         return BookingMapper.toBookingFullDto(booking);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Collection<BookingFullDto> getAllByState(long userId, State state) {
         getUser(userId);
@@ -92,7 +93,6 @@ public class BookingServiceImpl implements BookingService {
                 .collect(Collectors.toList());
     }
 
-    @Transactional(readOnly = true)
     @Override
     public Collection<BookingFullDto> getAllByOwnerAndState(long userId, State state) {
         getUser(userId);

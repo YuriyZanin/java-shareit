@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional(readOnly = true)
 @RequiredArgsConstructor
 public class ItemServiceImpl implements ItemService {
     private final ItemRepository itemRepository;
@@ -33,6 +34,7 @@ public class ItemServiceImpl implements ItemService {
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
 
+    @Transactional
     @Override
     public Item create(long userId, Item item) {
         User owner = getUser(userId);
@@ -40,6 +42,7 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.save(item);
     }
 
+    @Transactional
     @Override
     public Item update(long userId, Item item) {
         User owner = getUser(userId);
@@ -61,7 +64,6 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.save(actual);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public ItemFullDto get(long userId, long itemId) {
         getUser(userId);
@@ -78,7 +80,6 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<ItemFullDto> getAllByUser(long userId) {
         getUser(userId);
@@ -102,12 +103,12 @@ public class ItemServiceImpl implements ItemService {
         return result;
     }
 
+    @Transactional
     @Override
     public void delete(long userId, long itemId) {
         itemRepository.deleteByIdAndOwnerId(itemId, userId);
     }
 
-    @Transactional(readOnly = true)
     @Override
     public List<Item> getByText(long userId, String text) {
         getUser(userId);
@@ -117,6 +118,7 @@ public class ItemServiceImpl implements ItemService {
         return itemRepository.searchByText(text);
     }
 
+    @Transactional
     @Override
     public CommentFullDto addComment(long userId, long itemId, CommentCreationDto comment) {
         User author = getUser(userId);
