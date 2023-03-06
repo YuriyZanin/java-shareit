@@ -8,6 +8,7 @@ import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.service.State;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.validation.util.ValidationUtil;
 
 import javax.validation.Valid;
@@ -44,15 +45,25 @@ public class BookingController {
 
     @GetMapping
     public Collection<BookingFullDto> findAllByState(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                     @RequestParam(defaultValue = "ALL") String state) {
+                                                     @RequestParam(defaultValue = "ALL") String state,
+                                                     @RequestParam (defaultValue = "0") int from,
+                                                     @RequestParam (defaultValue = "20") int size) {
         log.info("Запрос на получение списка всех бронирований текущего пользователя");
-        return bookingService.getAllByState(userId, State.parseString(state));
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Параметры запроса заданы неверно");
+        }
+        return bookingService.getAllByState(userId, State.parseString(state), from, size);
     }
 
     @GetMapping("/owner")
     public Collection<BookingFullDto> findAllByOwnerWithState(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                              @RequestParam(defaultValue = "ALL") String state) {
+                                                              @RequestParam(defaultValue = "ALL") String state,
+                                                              @RequestParam (defaultValue = "0") int from,
+                                                              @RequestParam (defaultValue = "20") int size) {
         log.info("Запрос на получение списка бронирований для всех вещей текущего пользователя");
-        return bookingService.getAllByOwnerAndState(userId, State.parseString(state));
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Параметры запроса заданы неверно");
+        }
+        return bookingService.getAllByOwnerAndState(userId, State.parseString(state), from, size);
     }
 }

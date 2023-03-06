@@ -29,5 +29,6 @@ public class Item {
     @JoinColumn(name = "request_id")
     private ItemRequest request;
     @OneToMany(mappedBy = "item")
+    @ToString.Exclude
     private List<Comment> comments;
 }

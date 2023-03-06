@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.CommentFullDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -47,16 +48,26 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemFullDto> findByUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemFullDto> findByUser(@RequestHeader("X-Sharer-User-Id") long userId,
+                                        @RequestParam (defaultValue = "0") int from,
+                                        @RequestParam (defaultValue = "20") int size) {
         log.info("Запрос всех вещей у пользователя с id {}", userId);
-        return itemService.getAllByUser(userId);
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Параметры запроса заданы неверно");
+        }
+        return itemService.getAllByUser(userId, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemFullDto> findByNameAndDescription(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                      @RequestParam String text) {
+                                                      @RequestParam String text,
+                                                      @RequestParam (defaultValue = "0") int from,
+                                                      @RequestParam (defaultValue = "20") int size) {
         log.info("Запрос на поиск вещей содержащих: {}", text);
-        return itemService.getByText(userId, text);
+        if (from < 0 || size < 1) {
+            throw new ValidationException("Параметры запроса заданы неверно");
+        }
+        return itemService.getByText(userId, text, from, size);
     }
 
     @DeleteMapping("/{itemId}")
