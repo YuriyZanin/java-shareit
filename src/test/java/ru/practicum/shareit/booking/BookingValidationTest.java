@@ -55,7 +55,7 @@ public class BookingValidationTest extends AbstractValidationTest {
                 .end(LocalDateTime.now().minusMinutes(1))
                 .build();
         Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
-        assertEquals(2, violations.size());
+        assertEquals(3, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("start")));
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("end")));
     }
