@@ -17,13 +17,13 @@ import ru.practicum.shareit.item.service.ItemService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static ru.practicum.shareit.validation.util.ValidationUtil.DEFAULT_DATE_TIME_FORMATTER;
 
 
 @WebMvcTest(ItemController.class)
@@ -164,7 +164,6 @@ public class ItemControllerTest {
         CommentFullDto fullDto = CommentFullDto.builder().id(1L).authorName("Author").text("text").created(now).build();
         Mockito.when(itemService.addComment(Mockito.anyLong(), Mockito.anyLong(), Mockito.any())).thenReturn(fullDto);
 
-        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         CommentCreationDto creationDto = new CommentCreationDto(null, "text");
         mvc.perform(post("/items/1/comment")
                         .header("X-Sharer-User-Id", 1L)
@@ -177,6 +176,6 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.id", is(fullDto.getId()), Long.class))
                 .andExpect(jsonPath("$.authorName", is(fullDto.getAuthorName())))
                 .andExpect(jsonPath("$.text", is(fullDto.getText())))
-                .andExpect(jsonPath("$.created", is(fullDto.getCreated().format(dateFormat))));
+                .andExpect(jsonPath("$.created", is(fullDto.getCreated().format(DEFAULT_DATE_TIME_FORMATTER))));
     }
 }

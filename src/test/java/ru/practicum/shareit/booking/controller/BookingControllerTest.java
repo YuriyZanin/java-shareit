@@ -18,13 +18,13 @@ import ru.practicum.shareit.user.dto.UserDto;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static ru.practicum.shareit.validation.util.ValidationUtil.DEFAULT_DATE_TIME_FORMATTER;
 
 @WebMvcTest(BookingController.class)
 public class BookingControllerTest {
@@ -35,7 +35,6 @@ public class BookingControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
-    private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     private final LocalDateTime startTime = LocalDateTime.now().plusHours(1);
     private final LocalDateTime endTime = LocalDateTime.now().plusHours(2);
 
@@ -69,8 +68,8 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.item.id", is(bookingDto.getItem().getId()), Long.class))
                 .andExpect(jsonPath("$.booker.id", is(bookingDto.getBooker().getId()), Long.class))
-                .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(dateFormat))))
-                .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(dateFormat))))
+                .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
+                .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().name())));
     }
 
@@ -94,8 +93,8 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.item.id", is(bookingDto.getItem().getId()), Long.class))
                 .andExpect(jsonPath("$.booker.id", is(bookingDto.getBooker().getId()), Long.class))
-                .andExpect(jsonPath("$.start", is(approved.getStart().format(dateFormat))))
-                .andExpect(jsonPath("$.end", is(approved.getEnd().format(dateFormat))))
+                .andExpect(jsonPath("$.start", is(approved.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
+                .andExpect(jsonPath("$.end", is(approved.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.status", is(approved.getStatus().name())));
     }
 
@@ -110,8 +109,8 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.item.id", is(bookingDto.getItem().getId()), Long.class))
                 .andExpect(jsonPath("$.booker.id", is(bookingDto.getBooker().getId()), Long.class))
-                .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(dateFormat))))
-                .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(dateFormat))))
+                .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
+                .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().name())));
     }
 
@@ -133,8 +132,8 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.[0].item.id", is(bookingDto.getItem().getId()), Long.class))
                 .andExpect(jsonPath("$.[0].booker.id", is(bookingDto.getBooker().getId()), Long.class))
-                .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(dateFormat))))
-                .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(dateFormat))))
+                .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
+                .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().name())));
     }
 
@@ -156,8 +155,8 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].id", is(bookingDto.getId()), Long.class))
                 .andExpect(jsonPath("$.[0].item.id", is(bookingDto.getItem().getId()), Long.class))
                 .andExpect(jsonPath("$.[0].booker.id", is(bookingDto.getBooker().getId()), Long.class))
-                .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(dateFormat))))
-                .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(dateFormat))))
+                .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
+                .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().name())));
     }
 }

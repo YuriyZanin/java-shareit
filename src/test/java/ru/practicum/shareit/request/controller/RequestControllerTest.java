@@ -16,7 +16,6 @@ import ru.practicum.shareit.request.service.ItemRequestService;
 
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +23,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static ru.practicum.shareit.validation.util.ValidationUtil.DEFAULT_DATE_TIME_FORMATTER;
 
 @WebMvcTest(ItemRequestController.class)
 public class RequestControllerTest {
@@ -35,7 +35,6 @@ public class RequestControllerTest {
     private ItemRequestService itemRequestService;
 
     private final LocalDateTime created = LocalDateTime.now();
-    private final DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
     private final ItemRequestDto requestDto = ItemRequestDto.builder()
             .id(1L)
             .description("test")
@@ -66,7 +65,8 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.description", is(requestDto.getDescription())))
                 .andExpect(jsonPath("$.items", hasSize(1)))
                 .andExpect(jsonPath("$.items[0].id", is(2L), Long.class))
-                .andExpect(jsonPath("$.created", is(requestDto.getCreated().format(dateFormat))));
+                .andExpect(jsonPath("$.created", is(requestDto.getCreated()
+                        .format(DEFAULT_DATE_TIME_FORMATTER))));
     }
 
     @Test
@@ -81,7 +81,8 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.id", is(requestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(requestDto.getDescription())))
                 .andExpect(jsonPath("$.items", hasSize(1)))
-                .andExpect(jsonPath("$.created", is(requestDto.getCreated().format(dateFormat))));
+                .andExpect(jsonPath("$.created", is(requestDto.getCreated()
+                        .format(DEFAULT_DATE_TIME_FORMATTER))));
     }
 
     @Test
@@ -98,7 +99,8 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.[0].id", is(requestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.[0].description", is(requestDto.getDescription())))
                 .andExpect(jsonPath("$.[0].items", hasSize(1)))
-                .andExpect(jsonPath("$.[0].created", is(requestDto.getCreated().format(dateFormat))));
+                .andExpect(jsonPath("$.[0].created", is(requestDto.getCreated()
+                        .format(DEFAULT_DATE_TIME_FORMATTER))));
     }
 
     @Test
@@ -118,6 +120,7 @@ public class RequestControllerTest {
                 .andExpect(jsonPath("$.[0].id", is(requestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.[0].description", is(requestDto.getDescription())))
                 .andExpect(jsonPath("$.[0].items", hasSize(1)))
-                .andExpect(jsonPath("$.[0].created", is(requestDto.getCreated().format(dateFormat))));
+                .andExpect(jsonPath("$.[0].created", is(requestDto.getCreated()
+                        .format(DEFAULT_DATE_TIME_FORMATTER))));
     }
 }
