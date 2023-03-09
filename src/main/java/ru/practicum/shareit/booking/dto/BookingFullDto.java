@@ -5,6 +5,7 @@ import lombok.*;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.item.dto.ItemFullDto;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.validation.util.ValidationUtil;
 
 import java.time.LocalDateTime;
 
@@ -15,9 +16,9 @@ import java.time.LocalDateTime;
 @Builder
 public class BookingFullDto {
     private final Long id;
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = ValidationUtil.DEFAULT_DATE_TIME_FORMAT)
     private final LocalDateTime start;
-    @JsonFormat(pattern="yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = ValidationUtil.DEFAULT_DATE_TIME_FORMAT)
     private final LocalDateTime end;
     private final Status status;
     private final UserDto booker;

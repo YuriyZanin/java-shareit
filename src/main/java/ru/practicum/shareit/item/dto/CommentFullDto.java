@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import ru.practicum.shareit.validation.util.ValidationUtil;
 
 import java.time.LocalDateTime;
 
@@ -16,6 +17,6 @@ public class CommentFullDto {
     private final Long id;
     private final String text;
     private final String authorName;
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = ValidationUtil.DEFAULT_DATE_TIME_FORMAT)
     private final LocalDateTime created;
 }
