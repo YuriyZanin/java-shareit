@@ -51,7 +51,7 @@ public class BookingValidationTest extends AbstractValidationTest {
     void shouldBeFailedWhenStartAndEndInPast() {
         BookingCreationDto test = BookingCreationDto.builder()
                 .itemId(1L)
-                .start(LocalDateTime.now().minusMinutes(1))
+                .start(LocalDateTime.now())
                 .end(LocalDateTime.now().minusMinutes(1))
                 .build();
         Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
