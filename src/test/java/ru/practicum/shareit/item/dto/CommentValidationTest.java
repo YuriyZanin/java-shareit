@@ -1,8 +1,7 @@
-package ru.practicum.shareit.item;
+package ru.practicum.shareit.item.dto;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.AbstractValidationTest;
-import ru.practicum.shareit.item.dto.CommentCreationDto;
 
 import javax.validation.ConstraintViolation;
 import java.util.Set;

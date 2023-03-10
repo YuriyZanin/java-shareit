@@ -1,8 +1,7 @@
-package ru.practicum.shareit.request;
+package ru.practicum.shareit.request.dto;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.AbstractValidationTest;
-import ru.practicum.shareit.request.dto.ItemRequestCreationDto;
 
 import javax.validation.ConstraintViolation;
 import java.util.Set;

@@ -1,8 +1,7 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.dto;
 
 import org.junit.jupiter.api.Test;
 import ru.practicum.shareit.AbstractValidationTest;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.validation.CreateValidation;
 import ru.practicum.shareit.validation.UpdateValidation;
 
