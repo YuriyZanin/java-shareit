@@ -14,6 +14,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static ru.practicum.shareit.TestData.getNewUser;
 
 @Transactional
 @SpringBootTest
@@ -36,8 +37,25 @@ public class UserServiceTest {
     }
 
     @Test
+    void shouldUpdateUser() {
+        User user = getNewUser();
+        em.persist(user);
+
+        UserDto updateDto = UserDto.builder().name("updated name").email("update@mail.com").build();
+        userService.update(user.getId(), updateDto);
+
+        User fromDb = em.createQuery("SELECT u FROM User u WHERE u.id = :userId", User.class)
+                .setParameter("userId", user.getId())
+                .getSingleResult();
+
+        assertThat(fromDb.getId(), equalTo(user.getId()));
+        assertThat(fromDb.getName(), equalTo(updateDto.getName()));
+        assertThat(fromDb.getEmail(), equalTo(updateDto.getEmail()));
+    }
+
+    @Test
     void shouldFindAll() {
-        User user = User.builder().name("test").email("test@mail.com").build();
+        User user = getNewUser();
         em.persist(user);
 
         UserDto userDto = UserMapper.toUserDto(user);
@@ -48,7 +66,7 @@ public class UserServiceTest {
 
     @Test
     void shouldFindById() {
-        User user = User.builder().name("test").email("test@mail.com").build();
+        User user = getNewUser();
         em.persist(user);
 
         UserDto fromDb = userService.get(user.getId());
@@ -58,7 +76,7 @@ public class UserServiceTest {
 
     @Test
     void shouldDeleteById() {
-        User user = User.builder().name("test").email("test@mail.com").build();
+        User user = getNewUser();
         em.persist(user);
 
         userService.delete(user.getId());

@@ -26,6 +26,13 @@ public class TestData {
 
     public static final Item item1OfUser1 = Item.builder()
             .id(1L).name("item 1").description("description of item 1").owner(user1).available(true).build();
+    public static final Item item2OfUser1 = Item.builder()
+            .id(2L).name("item 2").description("description of item 2").owner(user1).available(true).build();
+    public static final Item item3OfUser2 = Item.builder()
+            .id(3L).name("item 3").description("description of item 3").owner(user2).available(true).build();
+    public static final Item itemNotAvailable = Item.builder()
+            .id(4L).name("item 4").description("not available item").owner(user3).available(false).build();
+
     public static final Booking booking2WithApprove = Booking.builder()
             .id(2L)
             .start(futureStartTime)
@@ -42,8 +49,6 @@ public class TestData {
             .booker(user2)
             .item(item1OfUser1)
             .build();
-    public static final Item item2OfUser1 = Item.builder()
-            .id(2L).name("item 2").description("description of item 2").owner(user1).available(true).build();
     public static final Booking booking3WithRejected = Booking.builder()
             .id(3L)
             .start(futureStartTime)
@@ -60,8 +65,6 @@ public class TestData {
             .booker(user2)
             .item(item2OfUser1)
             .build();
-    public static final Item item3OfUser2 = Item.builder()
-            .id(3L).name("item 3").description("description of item 3").owner(user2).available(true).build();
     public static final Booking booking1OfItem3 = Booking.builder()
             .id(1L)
             .start(futureStartTime)
@@ -70,7 +73,33 @@ public class TestData {
             .booker(user1)
             .item(item3OfUser2)
             .build();
-    public static final Item itemNotAvailable = Item.builder()
-            .id(4L).name("item 4").description("not available item").owner(user3).available(false).build();
+
+    public static Item getCopy(Item item) {
+        return Item.builder()
+                .id(item.getId())
+                .name(item.getName())
+                .description(item.getDescription())
+                .available(item.getAvailable())
+                .owner(item.getOwner())
+                .request(item.getRequest())
+                .comments(item.getComments())
+                .build();
+    }
+
+    public static User getNewUser() {
+        return User.builder()
+                .name("user")
+                .email("test@mail.com")
+                .build();
+    }
+
+    public static Item getNewItem(User owner) {
+        return Item.builder()
+                .name("name")
+                .description("description")
+                .available(true)
+                .owner(owner)
+                .build();
+    }
 }
 

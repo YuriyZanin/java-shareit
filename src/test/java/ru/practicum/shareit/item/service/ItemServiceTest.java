@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,6 +22,8 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static ru.practicum.shareit.TestData.getNewItem;
+import static ru.practicum.shareit.TestData.getNewUser;
 
 @Transactional
 @SpringBootTest
@@ -29,9 +32,17 @@ public class ItemServiceTest {
     private final EntityManager em;
     private final ItemService itemService;
 
+    private User owner;
+    private Item item;
+
+    @BeforeEach
+    void setUp() {
+        owner = getNewUser();
+        item = getNewItem(owner);
+    }
+
     @Test
     void shouldSaveItem() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
         em.persist(owner);
 
         ItemDto itemDto = ItemDto.builder().name("name").description("description").available(true).build();
@@ -49,11 +60,28 @@ public class ItemServiceTest {
     }
 
     @Test
-    void shouldGetById() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
+    void shouldUpdateItem() {
         em.persist(owner);
+        em.persist(item);
 
-        Item item = Item.builder().owner(owner).name("name").description("description").available(true).build();
+        ItemDto creationDto = ItemDto.builder()
+                .name("updated name").available(false).description("updated description").build();
+
+        itemService.update(owner.getId(), item.getId(), creationDto);
+
+        Item fromDb = em.createQuery("SELECT i FROM Item i WHERE i.id = :itemId", Item.class)
+                .setParameter("itemId", item.getId())
+                .getSingleResult();
+
+        assertThat(fromDb.getId(), equalTo(item.getId()));
+        assertThat(fromDb.getName(), equalTo(creationDto.getName()));
+        assertThat(fromDb.getAvailable(), equalTo(creationDto.getAvailable()));
+        assertThat(fromDb.getDescription(), equalTo(creationDto.getDescription()));
+    }
+
+    @Test
+    void shouldGetById() {
+        em.persist(owner);
         em.persist(item);
 
         ItemFullDto fromDb = itemService.get(owner.getId(), item.getId());
@@ -63,10 +91,7 @@ public class ItemServiceTest {
 
     @Test
     void shouldGetAllByUser() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
         em.persist(owner);
-
-        Item item = Item.builder().owner(owner).name("name").description("description").available(true).build();
         em.persist(item);
 
         List<ItemFullDto> allByUser = itemService.getAllByUser(owner.getId(), 0, 1);
@@ -77,10 +102,7 @@ public class ItemServiceTest {
 
     @Test
     void shouldGetByText() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
         em.persist(owner);
-
-        Item item = Item.builder().owner(owner).name("name").description("description").available(true).build();
         em.persist(item);
 
         List<ItemFullDto> all = itemService.getByText(owner.getId(), "description", 0, 1);
@@ -91,10 +113,7 @@ public class ItemServiceTest {
 
     @Test
     void shouldAddComment() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
         em.persist(owner);
-
-        Item item = Item.builder().owner(owner).name("name").description("description").available(true).build();
         em.persist(item);
 
         Booking booking = Booking.builder()
@@ -112,10 +131,7 @@ public class ItemServiceTest {
 
     @Test
     void shouldDeleteById() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
         em.persist(owner);
-
-        Item item = Item.builder().owner(owner).name("name").description("description").available(true).build();
         em.persist(item);
 
         itemService.delete(owner.getId(), item.getId());
