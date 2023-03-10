@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.*;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ItemRequestServiceTest {
     private final EntityManager em;
-    private final ItemRequestService itemService;
+    private final ItemRequestService requestService;
 
     @Test
     void shouldSaveRequest() {
@@ -32,9 +32,10 @@ public class ItemRequestServiceTest {
         em.persist(user);
 
         ItemRequestCreationDto creationDto = new ItemRequestCreationDto(null, "description");
-        ItemRequestDto saved = itemService.create(user.getId(), creationDto);
+        ItemRequestDto saved = requestService.create(user.getId(), creationDto);
 
-        ItemRequest request = em.createQuery("SELECT i FROM ItemRequest i WHERE i.id = :requestId", ItemRequest.class)
+        ItemRequest request = em.createQuery("SELECT i FROM ItemRequest i WHERE i.id = :requestId",
+                        ItemRequest.class)
                 .setParameter("requestId", saved.getId())
                 .getSingleResult();
         assertThat(request.getId(), notNullValue());
@@ -51,9 +52,44 @@ public class ItemRequestServiceTest {
                 .build();
         em.persist(request);
 
-        List<ItemRequestDto> requests = itemService.getByUser(user.getId());
+        List<ItemRequestDto> requests = requestService.getByUser(user.getId());
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
         assertThat(requests, hasSize(1));
         assertThat(requests, hasItem(itemRequestDto));
+    }
+
+    @Test
+    void shouldFindById() {
+        User user = User.builder().name("test").email("test@mail.com").build();
+        em.persist(user);
+
+        ItemRequest request = ItemRequest.builder().requester(user).created(LocalDateTime.now()).description("desc")
+                .build();
+        em.persist(request);
+
+        ItemRequestDto fromDb = requestService.getById(user.getId(), request.getId());
+        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
+        assertThat(fromDb, equalTo(itemRequestDto));
+    }
+
+    @Test
+    void shouldFindAll() {
+        User requester = User.builder().name("test").email("test@mail.com").build();
+        em.persist(requester);
+
+        User other = User.builder().name("name").email("other@mail.com").build();
+        em.persist(other);
+
+        ItemRequest request = ItemRequest
+                .builder().requester(requester).created(LocalDateTime.now()).description("desc").build();
+        em.persist(request);
+
+        List<ItemRequestDto> all = requestService.getAll(requester.getId(), 0, 1);
+        assertThat(all, hasSize(0));
+
+        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
+        all = requestService.getAll(other.getId(), 0, 1);
+        assertThat(all, hasSize(1));
+        assertThat(all, hasItem(itemRequestDto));
     }
 }
