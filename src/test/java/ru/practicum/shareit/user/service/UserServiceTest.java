@@ -1,10 +1,12 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.exception.AlreadyExistException;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
@@ -34,6 +36,16 @@ public class UserServiceTest {
         assertThat(result.getId(), notNullValue());
         assertThat(result.getName(), equalTo(userDto.getName()));
         assertThat(result.getEmail(), equalTo(userDto.getEmail()));
+    }
+
+    @Test
+    void shouldBeFailedIfAlreadyExist() {
+        User user = getNewUser();
+        UserDto userDto2 = UserDto.builder().name("test2").email(user.getEmail()).build();
+
+        em.persist(user);
+
+        Assertions.assertThrows(AlreadyExistException.class, () -> userService.create(userDto2));
     }
 
     @Test
