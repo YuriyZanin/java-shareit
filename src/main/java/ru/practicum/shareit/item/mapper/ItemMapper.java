@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ItemMapper {
-    public static List<ItemDto> toItemDtos(List<Item> items){
+    public static List<ItemDto> toItemDtos(List<Item> items) {
         return items.stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
