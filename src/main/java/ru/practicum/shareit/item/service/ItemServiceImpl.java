@@ -165,7 +165,9 @@ public class ItemServiceImpl implements ItemService {
         LocalDateTime now = LocalDateTime.now();
         return bookings.stream()
                 .sorted(Comparator.comparing(Booking::getEnd).reversed())
-                .filter(b -> b.getEnd().isBefore(now) || b.getEnd().equals(now))
+                .filter(b -> b.getEnd().isBefore(now)
+                        || b.getEnd().equals(now)
+                        || (now.isAfter(b.getStart()) && now.isBefore(b.getEnd())))
                 .findFirst()
                 .orElse(null);
     }
