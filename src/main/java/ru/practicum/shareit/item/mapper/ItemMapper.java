@@ -46,23 +46,6 @@ public class ItemMapper {
         );
     }
 
-    public static Item toItem(ItemDto itemDto) {
-        return Item.builder()
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .build();
-    }
-
-    public static Item toItem(Long itemId, ItemDto itemDto) {
-        return Item.builder()
-                .id(itemId)
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .build();
-    }
-
     public static Item toItem(ItemDto itemDetails, User owner, ItemRequest request) {
         return Item.builder()
                 .id(itemDetails.getId())

@@ -11,7 +11,6 @@ import java.util.List;
 @Table(name = "items", schema = "public")
 @Getter
 @Setter
-@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

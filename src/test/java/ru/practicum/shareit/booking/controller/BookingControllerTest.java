@@ -7,6 +7,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.BookingController;
@@ -153,5 +154,20 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().name())));
+    }
+
+    @SneakyThrows
+    @Test
+    void shouldReturnStatus400WhenUnknownState() {
+        Mockito.when(bookingService.getAllByOwnerAndState(
+                Mockito.anyLong(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(List.of(bookingDto));
+
+        mvc.perform(get("/bookings/owner")
+                .header("X-Sharer-User-Id", 1L)
+                .param("state", "FAIL")
+                .param("from", "0")
+                .param("size", "1")
+                .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().is(HttpStatus.BAD_REQUEST.value()));
     }
 }

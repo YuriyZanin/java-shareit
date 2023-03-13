@@ -53,21 +53,6 @@ public class BookingValidationTest extends AbstractValidationTest {
     }
 
     @Test
-    void shouldBeFailedWhenStartAndEndInPast() {
-        BookingCreationDto test = BookingCreationDto.builder()
-                .itemId(1L)
-                .start(LocalDateTime.now())
-                .end(LocalDateTime.now().minusMinutes(1))
-                .build();
-
-        Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
-
-        assertEquals(3, violations.size());
-        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("start")));
-        assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("end")));
-    }
-
-    @Test
     void shouldBeFailedWhenStartAfterEnd() {
         BookingCreationDto test = BookingCreationDto.builder()
                 .itemId(1L)

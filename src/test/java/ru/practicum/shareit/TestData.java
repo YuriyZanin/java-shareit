@@ -7,6 +7,7 @@ import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.item.dto.CommentFullDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemFullDto;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.model.ItemRequest;
@@ -111,9 +112,7 @@ public class TestData {
             .comments(List.of(commentFullDto))
             .build();
 
-    public static final ItemDto itemDto = ItemDto.builder()
-            .id(1L).name("test").description("description").available(true).requestId(2L).build();
-
+    public static final ItemDto itemDto = ItemMapper.toItemDto(item1OfUser1);
 
     public static User getNewUser() {
         return User.builder()

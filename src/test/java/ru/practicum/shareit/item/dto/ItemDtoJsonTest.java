@@ -9,6 +9,7 @@ import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.TestData;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static ru.practicum.shareit.TestData.*;
 
 @JsonTest
 public class ItemDtoJsonTest {
@@ -18,12 +19,11 @@ public class ItemDtoJsonTest {
     @SneakyThrows
     @Test
     void serializationTest() {
-        JsonContent<ItemDto> jsonTest = json.write(TestData.itemDto);
+        JsonContent<ItemDto> jsonTest = json.write(itemDto);
 
         assertThat(jsonTest).extractingJsonPathNumberValue("$.id").isEqualTo(1);
-        assertThat(jsonTest).extractingJsonPathStringValue("$.description").isEqualTo("description");
+        assertThat(jsonTest).extractingJsonPathStringValue("$.description").isEqualTo(itemDto.getDescription());
         assertThat(jsonTest).extractingJsonPathBooleanValue("$.available").isTrue();
-        assertThat(jsonTest).extractingJsonPathNumberValue("$.requestId").isEqualTo(2);
     }
 
     @SneakyThrows

@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.CommentFullDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -22,8 +24,7 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static ru.practicum.shareit.TestData.getNewItem;
-import static ru.practicum.shareit.TestData.getNewUser;
+import static ru.practicum.shareit.TestData.*;
 
 @Transactional
 @SpringBootTest
@@ -56,6 +57,30 @@ public class ItemServiceTest {
         assertThat(fromDb.getName(), equalTo(creationDto.getName()));
         assertThat(fromDb.getDescription(), equalTo(creationDto.getDescription()));
         assertThat(fromDb.getAvailable(), equalTo(true));
+    }
+
+    @Test
+    void shouldBeFailedIfItemRequestNotFound() {
+        ItemDto creationDto = ItemDto.builder()
+                .name("name").description("description").available(true).requestId(NOT_FOUND_ID).build();
+
+        em.persist(owner);
+
+        Assertions.assertThrows(NotFoundException.class, () -> itemService.create(owner.getId(), creationDto));
+    }
+
+    @Test
+    void shouldBeFailedWhenUpdateOtherUser() {
+        User notOwner = User.builder().email("user2@mail.com").name("user").build();
+        ItemDto creationDto = ItemDto.builder()
+                .name("name").description("description").available(true).requestId(NOT_FOUND_ID).build();
+
+        em.persist(notOwner);
+        em.persist(owner);
+        em.persist(item);
+
+        Assertions.assertThrows(NotFoundException.class,
+                () -> itemService.update(notOwner.getId(), item.getId(), creationDto));
     }
 
     @Test
