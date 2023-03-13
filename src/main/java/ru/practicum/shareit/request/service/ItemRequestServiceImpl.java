@@ -71,7 +71,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
         getUser(userId);
 
         Sort sortByCreatedDesc = Sort.by(Sort.Direction.DESC, "created");
-        Pageable page = PageRequest.of(from, size, sortByCreatedDesc);
+        Pageable page = PageRequest.of(from / size, size, sortByCreatedDesc);
         List<ItemRequest> requests = itemRequestRepository.findByRequesterIdNot(page, userId).getContent();
 
         return getRequestWithItemsDtos(requests);

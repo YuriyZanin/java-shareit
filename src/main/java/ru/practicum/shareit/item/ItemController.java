@@ -13,13 +13,13 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.validation.CreateValidation;
 import ru.practicum.shareit.validation.UpdateValidation;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import java.util.List;
 
 import static ru.practicum.shareit.validation.util.ValidationUtil.checkErrors;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
@@ -72,7 +72,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentFullDto addComment(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
-                                     @Valid @RequestBody CommentCreationDto comment, BindingResult errors) {
+                                     @Validated @RequestBody CommentCreationDto comment, BindingResult errors) {
         checkErrors(errors);
         log.info("Запрос на добавление комментария к вещи с id {}", itemId);
         return itemService.addComment(userId, itemId, comment);

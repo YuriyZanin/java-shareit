@@ -95,7 +95,7 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemFullDto> getAllByUser(long userId, int from, int size) {
         getUser(userId);
 
-        Pageable pageable = PageRequest.of(from, size);
+        Pageable pageable = PageRequest.of(from / size, size);
         List<Item> items = itemRepository.findByOwnerId(pageable, userId).getContent();
 
         if (items.isEmpty()) {
@@ -131,7 +131,7 @@ public class ItemServiceImpl implements ItemService {
             return Collections.emptyList();
         }
 
-        Pageable pageable = PageRequest.of(from, size);
+        Pageable pageable = PageRequest.of(from / size, size);
         return itemRepository.searchByText(pageable, text).stream()
                 .map(i -> ItemMapper.toItemFullDto(i, null, null)).collect(Collectors.toList());
     }

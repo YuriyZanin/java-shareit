@@ -90,7 +90,7 @@ public class BookingServiceImpl implements BookingService {
         getUser(userId);
 
         Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
-        Pageable page = PageRequest.of(from, size, sortByStart);
+        Pageable page = PageRequest.of(from / size, size, sortByStart);
         List<Booking> bookings = bookingRepository.findAllByBookerId(page, userId).getContent();
 
         return doFilterByState(bookings, state).stream()
@@ -102,7 +102,7 @@ public class BookingServiceImpl implements BookingService {
     public Collection<BookingFullDto> getAllByOwnerAndState(long userId, State state, int from, int size) {
         getUser(userId);
 
-        Pageable page = PageRequest.of(from, size);
+        Pageable page = PageRequest.of(from / size, size);
         List<Booking> bookings = bookingRepository.findAllByOwner(page, userId).getContent();
 
         return doFilterByState(bookings, state).stream()
