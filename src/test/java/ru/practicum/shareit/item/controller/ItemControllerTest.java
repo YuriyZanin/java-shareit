@@ -21,7 +21,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ru.practicum.shareit.TestData.*;
-import static ru.practicum.shareit.validation.util.ValidationUtil.DEFAULT_DATE_TIME_FORMATTER;
+import static ru.practicum.shareit.validation.util.ValidationUtil.COMMENT_DATE_TIME_FORMATTER;
 
 
 @WebMvcTest(ItemController.class)
@@ -167,6 +167,6 @@ public class ItemControllerTest {
                 .andExpect(jsonPath("$.authorName", is(commentFullDto.getAuthorName())))
                 .andExpect(jsonPath("$.text", is(commentFullDto.getText())))
                 .andExpect(jsonPath("$.created", is(commentFullDto.getCreated()
-                        .format(DEFAULT_DATE_TIME_FORMATTER))));
+                        .format(COMMENT_DATE_TIME_FORMATTER))));
     }
 }

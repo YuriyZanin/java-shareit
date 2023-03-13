@@ -17,6 +17,6 @@ public class CommentFullDto {
     private final Long id;
     private final String text;
     private final String authorName;
-    @JsonFormat(pattern = ValidationUtil.DEFAULT_DATE_TIME_FORMAT)
+    @JsonFormat(pattern = ValidationUtil.COMMENT_DATE_TIME_FORMAT)
     private final LocalDateTime created;
 }
