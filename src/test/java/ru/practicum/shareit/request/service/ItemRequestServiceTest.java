@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.TestData;
 import ru.practicum.shareit.request.dto.ItemRequestCreationDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
 import ru.practicum.shareit.request.mapper.ItemRequestMapper;
@@ -12,7 +13,6 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -28,68 +28,62 @@ public class ItemRequestServiceTest {
 
     @Test
     void shouldSaveRequest() {
-        User user = User.builder().name("test").email("test@mail.com").build();
-        em.persist(user);
-
+        User user = TestData.getNewUser();
         ItemRequestCreationDto creationDto = new ItemRequestCreationDto(null, "description");
-        ItemRequestDto saved = requestService.create(user.getId(), creationDto);
 
-        ItemRequest request = em.createQuery("SELECT i FROM ItemRequest i WHERE i.id = :requestId",
-                        ItemRequest.class)
+        em.persist(user);
+        ItemRequestDto saved = requestService.create(user.getId(), creationDto);
+        ItemRequest fromDb = em.createQuery("SELECT i FROM ItemRequest i WHERE i.id = :requestId", ItemRequest.class)
                 .setParameter("requestId", saved.getId())
                 .getSingleResult();
-        assertThat(request.getId(), notNullValue());
-        assertThat(request.getRequester(), equalTo(user));
-        assertThat(request.getDescription(), equalTo(creationDto.getDescription()));
+
+        assertThat(fromDb.getId(), notNullValue());
+        assertThat(fromDb.getRequester(), equalTo(user));
+        assertThat(fromDb.getDescription(), equalTo(creationDto.getDescription()));
     }
 
     @Test
     void shouldFindByUser() {
-        User user = User.builder().name("test").email("test@mail.com").build();
+        User user = TestData.getNewUser();
+        ItemRequest request = TestData.getNewItemRequest(user);
+
         em.persist(user);
-
-        ItemRequest request = ItemRequest.builder().requester(user).created(LocalDateTime.now()).description("desc")
-                .build();
         em.persist(request);
-
         List<ItemRequestDto> requests = requestService.getByUser(user.getId());
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
+
         assertThat(requests, hasSize(1));
         assertThat(requests, hasItem(itemRequestDto));
     }
 
     @Test
     void shouldFindById() {
-        User user = User.builder().name("test").email("test@mail.com").build();
+        User user = TestData.getNewUser();
+        ItemRequest request = TestData.getNewItemRequest(user);
+
         em.persist(user);
-
-        ItemRequest request = ItemRequest.builder().requester(user).created(LocalDateTime.now()).description("desc")
-                .build();
         em.persist(request);
-
         ItemRequestDto fromDb = requestService.getById(user.getId(), request.getId());
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
+
         assertThat(fromDb, equalTo(itemRequestDto));
     }
 
     @Test
     void shouldFindAll() {
-        User requester = User.builder().name("test").email("test@mail.com").build();
-        em.persist(requester);
+        User user1 = User.builder().name("user1").email("user1@mail.com").build();
+        User user2 = User.builder().name("user2").email("user2@mail.com").build();
+        ItemRequest request = TestData.getNewItemRequest(user1);
 
-        User other = User.builder().name("name").email("other@mail.com").build();
-        em.persist(other);
-
-        ItemRequest request = ItemRequest
-                .builder().requester(requester).created(LocalDateTime.now()).description("desc").build();
+        em.persist(user1);
+        em.persist(user2);
         em.persist(request);
-
-        List<ItemRequestDto> all = requestService.getAll(requester.getId(), 0, 1);
-        assertThat(all, hasSize(0));
-
+        List<ItemRequestDto> requestsForUser1 = requestService.getAll(user1.getId(), 0, 2);
+        List<ItemRequestDto> requestsForUser2 = requestService.getAll(user2.getId(), 0, 1);
         ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
-        all = requestService.getAll(other.getId(), 0, 1);
-        assertThat(all, hasSize(1));
-        assertThat(all, hasItem(itemRequestDto));
+
+        assertThat(requestsForUser1, hasSize(0));
+        assertThat(requestsForUser2, hasSize(1));
+        assertThat(requestsForUser2, hasItem(itemRequestDto));
     }
 }

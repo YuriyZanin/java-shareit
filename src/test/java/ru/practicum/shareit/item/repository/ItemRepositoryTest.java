@@ -2,14 +2,13 @@ package ru.practicum.shareit.item.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import ru.practicum.shareit.AbstractRepositoryTest;
+import ru.practicum.shareit.TestData;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -22,103 +21,97 @@ public class ItemRepositoryTest extends AbstractRepositoryTest {
 
     @Test
     void shouldSaveItem() {
-        User owner = User.builder().name("user").email("test@mail.com").build();
+        User owner = TestData.getNewUser();
+        Item newItem = TestData.getNewItem(owner);
+
         entityManager.persist(owner);
+        Item saved = itemRepository.save(newItem);
+        Item fromDb = entityManager.getEntityManager()
+                .createQuery("SELECT i FROM Item i WHERE i.id = :itemId", Item.class)
+                .setParameter("itemId", saved.getId())
+                .getSingleResult();
 
-        Item test = itemRepository.save(
-                Item.builder().name("test").description("desc").available(true).owner(owner).build());
-
-        assertThat(test.getId(), notNullValue());
-        assertThat(test.getName(), equalTo("test"));
-        assertThat(test.getDescription(), equalTo("desc"));
-        assertThat(test.getAvailable(), equalTo(true));
-        assertThat(test.getOwner(), equalTo(owner));
-        assertThat(test.getRequest(), nullValue());
-        assertThat(test.getComments(), nullValue());
+        assertThat(newItem.getId(), equalTo(saved.getId()));
+        assertThat(newItem.getName(), equalTo(fromDb.getName()));
+        assertThat(newItem.getDescription(), equalTo(fromDb.getDescription()));
+        assertThat(newItem.getAvailable(), equalTo(fromDb.getAvailable()));
+        assertThat(newItem.getOwner(), equalTo(owner));
+        assertThat(newItem.getRequest(), nullValue());
+        assertThat(newItem.getComments(), nullValue());
     }
 
     @Test
     void shouldFindByOwner() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
+        User owner = TestData.getNewUser();
+        Item item = TestData.getNewItem(owner);
+
         entityManager.persist(owner);
+        entityManager.persist(item);
+        List<Item> itemsByOwner = itemRepository.findByOwnerId(PageRequest.of(0, 2), owner.getId())
+                .getContent();
+        Optional<Item> itemsByIdAndOwner = itemRepository.findByIdAndOwnerId(item.getId(), owner.getId());
+        Optional<Item> itemsByIdOtherOwner = itemRepository.findByIdAndOwnerIdNot(item.getId(), owner.getId());
 
-        Item testItem = Item.builder().name("test").description("desc").available(true).owner(owner).build();
-        entityManager.persist(testItem);
-
-        Page<Item> page = itemRepository.findByOwnerId(PageRequest.of(0, 1), owner.getId());
-        assertThat(page, notNullValue());
-
-        List<Item> content = page.getContent();
-        assertThat(content, hasSize(1));
-        assertThat(content, hasItem(testItem));
-
-        Optional<Item> item = itemRepository.findByIdAndOwnerId(testItem.getId(), owner.getId());
-        assertThat(item, is(not(Optional.empty())));
-        assertThat(item, equalTo(Optional.of(testItem)));
-
-        item = itemRepository.findByIdAndOwnerIdNot(testItem.getId(), owner.getId());
-        assertThat(item, equalTo(Optional.empty()));
-
-        item = itemRepository.findByIdAndOwnerIdNot(testItem.getId(), 999L);
-        assertThat(item, is(not(Optional.empty())));
-        assertThat(item, equalTo(Optional.of(testItem)));
+        assertThat(itemsByOwner, hasSize(1));
+        assertThat(itemsByOwner, hasItem(item));
+        assertThat(itemsByIdAndOwner, is(not(Optional.empty())));
+        assertThat(itemsByIdAndOwner, equalTo(Optional.of(item)));
+        assertThat(itemsByIdOtherOwner, equalTo(Optional.empty()));
     }
 
     @Test
     void shouldFindByText() {
-        User owner = User.builder().name("test").email("test@mail.com").build();
+        User owner = TestData.getNewUser();
+        Item testItem = TestData.getNewItem(owner);
+
         entityManager.persist(owner);
-
-        Item testItem = Item.builder().name("test").description("desc").available(true).owner(owner).build();
         entityManager.persist(testItem);
+        List<Item> itemsByName = itemRepository.searchByText(PageRequest.of(0, 1), "name").getContent();
+        List<Item> itemsByDesc = itemRepository.searchByText(PageRequest.of(0, 1), "description")
+                .getContent();
 
-        Page<Item> page = itemRepository.searchByText(PageRequest.of(0, 1), "test");
-        assertThat(page, notNullValue());
-
-        List<Item> content = page.getContent();
-        assertThat(content, hasSize(1));
-        assertThat(content, hasItem(testItem));
-
-        page = itemRepository.searchByText(PageRequest.of(0, 1), "desc");
-        assertThat(content, hasSize(1));
-        assertThat(content, hasItem(testItem));
+        assertThat(itemsByName, hasSize(1));
+        assertThat(itemsByName, hasItem(testItem));
+        assertThat(itemsByDesc, hasSize(1));
+        assertThat(itemsByDesc, hasItem(testItem));
     }
 
     @Test
     void shouldFindByRequest() {
         User owner = User.builder().name("test").email("test@mail.com").build();
-        entityManager.persist(owner);
-
         User requester = User.builder().name("requester").email("test2@mail.com").build();
-        entityManager.persist(requester);
-
-        ItemRequest testRequest = ItemRequest.builder()
-                .description("test request").requester(requester).created(LocalDateTime.now()).build();
-        entityManager.persist(testRequest);
-
+        ItemRequest testRequest = TestData.getNewItemRequest(requester);
         Item testItem = Item.builder()
                 .name("test").description("desc").available(true).owner(owner).request(testRequest).build();
+
+        entityManager.persist(owner);
+        entityManager.persist(requester);
+        entityManager.persist(testRequest);
         entityManager.persist(testItem);
+        List<Item> itemsByRequest = itemRepository.findByRequestId(testRequest.getId());
+        List<Item> itemsByRequestsIn = itemRepository.findByRequestIdIn(List.of(testRequest.getId()));
 
-        List<Item> items = itemRepository.findByRequestId(testRequest.getId());
-        assertThat(items, hasSize(1));
-        assertThat(items, hasItem(testItem));
-
-        items = itemRepository.findByRequestIdIn(List.of(testRequest.getId()));
-        assertThat(items, hasSize(1));
-        assertThat(items, hasItem(testItem));
+        assertThat(itemsByRequest, hasSize(1));
+        assertThat(itemsByRequest, hasItem(testItem));
+        assertThat(itemsByRequestsIn, hasSize(1));
+        assertThat(itemsByRequestsIn, hasItem(testItem));
     }
 
     @Test
     void shouldDeleteByOwner() {
-        User owner = User.builder().name("user").email("test@mail.com").build();
+        User owner = TestData.getNewUser();
+        Item test = TestData.getNewItem(owner);
+
         entityManager.persist(owner);
-
-        Item test = Item.builder().name("test").description("desc").available(true).owner(owner).build();
         entityManager.persist(test);
-
         itemRepository.deleteByIdAndOwnerId(test.getId(), owner.getId());
         Optional<Item> item = itemRepository.findByIdAndOwnerId(test.getId(), owner.getId());
+        List<Item> resultList = entityManager.getEntityManager()
+                .createQuery("SELECT i FROM Item i WHERE i.id = :itemId", Item.class)
+                .setParameter("itemId", test.getId())
+                .getResultList();
+
         assertThat(item, is(Optional.empty()));
+        assertThat(resultList, empty());
     }
 }

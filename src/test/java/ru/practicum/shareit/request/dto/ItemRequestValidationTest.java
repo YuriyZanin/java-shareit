@@ -15,6 +15,7 @@ public class ItemRequestValidationTest extends AbstractValidationTest {
         ItemRequestCreationDto creationDto = new ItemRequestCreationDto(null, "description");
 
         Set<ConstraintViolation<ItemRequestCreationDto>> violations = validator.validate(creationDto);
+
         assertTrue(violations.isEmpty());
     }
 
@@ -23,6 +24,7 @@ public class ItemRequestValidationTest extends AbstractValidationTest {
         ItemRequestCreationDto creationDto = new ItemRequestCreationDto(null, null);
 
         Set<ConstraintViolation<ItemRequestCreationDto>> violations = validator.validate(creationDto);
+
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("description")));
     }
@@ -32,6 +34,7 @@ public class ItemRequestValidationTest extends AbstractValidationTest {
         ItemRequestCreationDto creationDto = new ItemRequestCreationDto(null, "");
 
         Set<ConstraintViolation<ItemRequestCreationDto>> violations = validator.validate(creationDto);
+
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("description")));
     }
@@ -41,6 +44,7 @@ public class ItemRequestValidationTest extends AbstractValidationTest {
         ItemRequestCreationDto creationDto = new ItemRequestCreationDto(null, "   ");
 
         Set<ConstraintViolation<ItemRequestCreationDto>> violations = validator.validate(creationDto);
+
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("description")));
     }

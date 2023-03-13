@@ -43,49 +43,46 @@ public class ItemServiceTest {
 
     @Test
     void shouldSaveItem() {
+        ItemDto creationDto = ItemDto.builder().name("name").description("description").available(true).build();
+
         em.persist(owner);
-
-        ItemDto itemDto = ItemDto.builder().name("name").description("description").available(true).build();
-        ItemFullDto itemFullDto = itemService.create(owner.getId(), itemDto);
-
-        Item item = em.createQuery("SELECT i FROM Item i WHERE i.id = :id", Item.class)
-                .setParameter("id", itemFullDto.getId())
+        ItemFullDto created = itemService.create(owner.getId(), creationDto);
+        Item fromDb = em.createQuery("SELECT i FROM Item i WHERE i.id = :id", Item.class)
+                .setParameter("id", created.getId())
                 .getSingleResult();
 
-        assertThat(item.getId(), equalTo(itemFullDto.getId()));
-        assertThat(item.getOwner(), equalTo(owner));
-        assertThat(item.getName(), equalTo(itemDto.getName()));
-        assertThat(item.getDescription(), equalTo(itemDto.getDescription()));
-        assertThat(item.getAvailable(), equalTo(true));
+        assertThat(fromDb.getId(), equalTo(created.getId()));
+        assertThat(fromDb.getOwner(), equalTo(owner));
+        assertThat(fromDb.getName(), equalTo(creationDto.getName()));
+        assertThat(fromDb.getDescription(), equalTo(creationDto.getDescription()));
+        assertThat(fromDb.getAvailable(), equalTo(true));
     }
 
     @Test
     void shouldUpdateItem() {
-        em.persist(owner);
-        em.persist(item);
-
-        ItemDto creationDto = ItemDto.builder()
+        ItemDto updateDto = ItemDto.builder()
                 .name("updated name").available(false).description("updated description").build();
 
-        itemService.update(owner.getId(), item.getId(), creationDto);
-
+        em.persist(owner);
+        em.persist(item);
+        itemService.update(owner.getId(), item.getId(), updateDto);
         Item fromDb = em.createQuery("SELECT i FROM Item i WHERE i.id = :itemId", Item.class)
                 .setParameter("itemId", item.getId())
                 .getSingleResult();
 
         assertThat(fromDb.getId(), equalTo(item.getId()));
-        assertThat(fromDb.getName(), equalTo(creationDto.getName()));
-        assertThat(fromDb.getAvailable(), equalTo(creationDto.getAvailable()));
-        assertThat(fromDb.getDescription(), equalTo(creationDto.getDescription()));
+        assertThat(fromDb.getName(), equalTo(updateDto.getName()));
+        assertThat(fromDb.getAvailable(), equalTo(updateDto.getAvailable()));
+        assertThat(fromDb.getDescription(), equalTo(updateDto.getDescription()));
     }
 
     @Test
     void shouldGetById() {
         em.persist(owner);
         em.persist(item);
-
         ItemFullDto fromDb = itemService.get(owner.getId(), item.getId());
         ItemFullDto fullDto = ItemMapper.toItemFullDto(item, null, null);
+
         assertThat(fromDb, equalTo(fullDto));
     }
 
@@ -93,9 +90,9 @@ public class ItemServiceTest {
     void shouldGetAllByUser() {
         em.persist(owner);
         em.persist(item);
-
         List<ItemFullDto> allByUser = itemService.getAllByUser(owner.getId(), 0, 1);
         ItemFullDto itemFullDto = ItemMapper.toItemFullDto(item, null, null);
+
         assertThat(allByUser, hasSize(1));
         assertThat(allByUser, hasItem(itemFullDto));
     }
@@ -104,26 +101,26 @@ public class ItemServiceTest {
     void shouldGetByText() {
         em.persist(owner);
         em.persist(item);
-
         List<ItemFullDto> all = itemService.getByText(owner.getId(), "description", 0, 1);
         ItemFullDto itemFullDto = ItemMapper.toItemFullDto(item, null, null);
+
         assertThat(all, hasSize(1));
         assertThat(all, hasItem(itemFullDto));
     }
 
     @Test
     void shouldAddComment() {
-        em.persist(owner);
-        em.persist(item);
-
         Booking booking = Booking.builder()
                 .booker(owner).item(item).start(LocalDateTime.now().minusHours(1)).end(LocalDateTime.now())
                 .status(Status.APPROVED)
                 .build();
-        em.persist(booking);
 
+        em.persist(owner);
+        em.persist(item);
+        em.persist(booking);
         CommentCreationDto commentCreationDto = new CommentCreationDto(null, "test comment");
         CommentFullDto commentFullDto = itemService.addComment(owner.getId(), item.getId(), commentCreationDto);
+
         assertThat(commentFullDto.getId(), notNullValue());
         assertThat(commentFullDto.getText(), equalTo(commentCreationDto.getText()));
         assertThat(commentFullDto.getAuthorName(), equalTo(owner.getName()));
@@ -133,12 +130,11 @@ public class ItemServiceTest {
     void shouldDeleteById() {
         em.persist(owner);
         em.persist(item);
-
         itemService.delete(owner.getId(), item.getId());
-
         List<Item> items = em.createQuery("SELECT i FROM Item i WHERE i.id = :itemId", Item.class)
                 .setParameter("itemId", item.getId())
                 .getResultList();
+
         assertThat(items, hasSize(0));
     }
 }

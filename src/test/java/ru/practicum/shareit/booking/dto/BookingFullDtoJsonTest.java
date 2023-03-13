@@ -1,17 +1,15 @@
 package ru.practicum.shareit.booking.dto;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
 import org.springframework.boot.test.json.JacksonTester;
 import org.springframework.boot.test.json.JsonContent;
-import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.item.dto.ItemFullDto;
-import ru.practicum.shareit.user.dto.UserDto;
-
-import java.time.LocalDateTime;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static ru.practicum.shareit.TestData.booking1OfItem3;
 import static ru.practicum.shareit.validation.util.ValidationUtil.DEFAULT_DATE_TIME_FORMATTER;
 
 @JsonTest
@@ -19,23 +17,18 @@ public class BookingFullDtoJsonTest {
     @Autowired
     private JacksonTester<BookingFullDto> json;
 
+    @SneakyThrows
     @Test
-    void serializationTest() throws Exception {
-        LocalDateTime start = LocalDateTime.now();
-        LocalDateTime end = LocalDateTime.now().plusHours(1);
-        BookingFullDto fullDto = BookingFullDto.builder()
-                .id(1L)
-                .start(start)
-                .end(end)
-                .status(Status.WAITING)
-                .booker(UserDto.builder().id(1L).name("user").email("user@mail.com").build())
-                .item(ItemFullDto.builder().id(1L).ownerId(2L).name("name").description("descr").available(true).build())
-                .build();
+    void serializationTest() {
+        BookingFullDto fullDto = BookingMapper.toBookingFullDto(booking1OfItem3);
 
         JsonContent<BookingFullDto> jsonTest = json.write(fullDto);
+
         assertThat(jsonTest).extractingJsonPathNumberValue("$.id", fullDto.getId());
-        assertThat(jsonTest).extractingJsonPathStringValue("$.start", start.format(DEFAULT_DATE_TIME_FORMATTER));
-        assertThat(jsonTest).extractingJsonPathStringValue("$.end", end.format(DEFAULT_DATE_TIME_FORMATTER));
+        assertThat(jsonTest).extractingJsonPathStringValue("$.start", booking1OfItem3.getStart()
+                .format(DEFAULT_DATE_TIME_FORMATTER));
+        assertThat(jsonTest).extractingJsonPathStringValue("$.end", booking1OfItem3.getEnd()
+                .format(DEFAULT_DATE_TIME_FORMATTER));
         assertThat(jsonTest).extractingJsonPathStringValue("$.status", fullDto.getStatus().name());
         assertThat(jsonTest).extractingJsonPathValue("$.booker", fullDto.getBooker());
         assertThat(jsonTest).extractingJsonPathValue("$.item", fullDto.getItem());

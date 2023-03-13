@@ -11,7 +11,6 @@ import org.springframework.data.domain.PageImpl;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
-import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
@@ -41,8 +40,7 @@ public class BookingServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        bookingService = new BookingServiceImpl(
-                bookingRepository, userRepository, itemRepository);
+        bookingService = new BookingServiceImpl(bookingRepository, userRepository, itemRepository);
     }
 
     @Test
@@ -55,30 +53,34 @@ public class BookingServiceImplTest {
     }
 
     @Test
-    void shouldBeFailedApprovingWhenAlready() {
-        booking1OfItem3.setStatus(Status.APPROVED);
+    void shouldBeFailedWhenApprovingTwice() {
         Mockito.when(bookingRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(booking2WithApprove));
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
 
         Assertions.assertThrows(ValidationException.class, () ->
                 bookingService.approveStatus(user1.getId(), booking2WithApprove.getId(), true));
+    }
 
+    @Test
+    void shouldBeFailedWhenRejectedTwice() {
         Mockito.when(bookingRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(booking3WithRejected));
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
+
         Assertions.assertThrows(ValidationException.class, () ->
-                bookingService.approveStatus(user1.getId(), booking1OfItem3.getId(), false));
+                bookingService.approveStatus(user1.getId(), booking3WithRejected.getId(), false));
     }
 
     @Test
     void shouldBeFailedCreateWhenItemNotAvailable() {
-        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
-        Mockito.when(itemRepository.findByIdAndOwnerIdNot(Mockito.anyLong(), Mockito.anyLong()))
-                .thenReturn(Optional.of(itemNotAvailable));
-
         BookingCreationDto creationDto = BookingCreationDto.builder()
                 .itemId(itemNotAvailable.getId())
                 .start(LocalDateTime.now())
                 .end(LocalDateTime.now().plusHours(1))
                 .build();
+
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
+        Mockito.when(itemRepository.findByIdAndOwnerIdNot(Mockito.anyLong(), Mockito.anyLong()))
+                .thenReturn(Optional.of(itemNotAvailable));
 
         Assertions.assertThrows(ValidationException.class, () ->
                 bookingService.create(user1.getId(), creationDto));
@@ -100,6 +102,7 @@ public class BookingServiceImplTest {
                 .thenReturn(new PageImpl<>(List.of(booking2WithApprove, booking3WithRejected)));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.ALL, 0, 2);
+
         assertThat(all, hasSize(2));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking2WithApprove)));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking3WithRejected)));
@@ -112,6 +115,7 @@ public class BookingServiceImplTest {
                 .thenReturn(new PageImpl<>(List.of(booking2WithApprove, booking3WithRejected)));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.REJECTED, 0, 2);
+
         assertThat(all, hasSize(1));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking3WithRejected)));
     }
@@ -123,6 +127,7 @@ public class BookingServiceImplTest {
                 .thenReturn(new PageImpl<>(List.of(booking2WithApprove, booking3WithRejected)));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.FUTURE, 0, 2);
+
         assertThat(all, hasSize(2));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking2WithApprove)));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking3WithRejected)));
@@ -135,6 +140,7 @@ public class BookingServiceImplTest {
                 .thenReturn(new PageImpl<>(List.of(booking2WithApprove, booking3WithRejected, booking4OfItem2)));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.WAITING, 0, 2);
+
         assertThat(all, hasSize(1));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking4OfItem2)));
     }
@@ -146,6 +152,7 @@ public class BookingServiceImplTest {
                 .thenReturn(new PageImpl<>(List.of(booking2WithApprove, booking3WithRejected, booking4OfItem2)));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.CURRENT, 0, 2);
+
         assertThat(all, hasSize(1));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking4OfItem2)));
     }
@@ -157,6 +164,7 @@ public class BookingServiceImplTest {
                 .thenReturn(new PageImpl<>(List.of(booking2WithApprove, booking3WithRejected, booking5OfItem1)));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.PAST, 0, 2);
+
         assertThat(all, hasSize(1));
         assertThat(all, hasItem(BookingMapper.toBookingFullDto(booking5OfItem1)));
     }

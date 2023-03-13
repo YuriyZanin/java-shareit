@@ -3,6 +3,7 @@ package ru.practicum.shareit.user.repository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import ru.practicum.shareit.AbstractRepositoryTest;
+import ru.practicum.shareit.TestData;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -18,25 +19,27 @@ public class UserRepositoryTest extends AbstractRepositoryTest {
 
     @Test
     void shouldSaveUser() {
-        User test = userRepository.save(User.builder()
-                .name("test")
-                .email("test@email.com")
-                .build());
+        User newUser = TestData.getNewUser();
 
-        assertThat(test.getId(), notNullValue());
-        assertThat(test.getName(), equalTo("test"));
-        assertThat(test.getEmail(), equalTo("test@email.com"));
+        userRepository.save(newUser);
+        User fromDb = entityManager.getEntityManager()
+                .createQuery("SELECT u FROM User u WHERE u.email = :email", User.class)
+                .setParameter("email", newUser.getEmail())
+                .getSingleResult();
+
+        assertThat(fromDb.getId(), notNullValue());
+        assertThat(fromDb.getName(), equalTo(newUser.getName()));
+        assertThat(fromDb.getEmail(), equalTo(newUser.getEmail()));
     }
 
     @Test
     void shouldFindAllUsers() {
         User test1 = User.builder().name("test1").email("test@email.com").build();
-        entityManager.persist(test1);
-
         User test2 = User.builder().name("test2").email("test2@email.com").build();
-        entityManager.persist(test2);
-
         User test3 = User.builder().name("test3").email("test3@email.com").build();
+
+        entityManager.persist(test1);
+        entityManager.persist(test2);
         entityManager.persist(test3);
 
         List<User> users = userRepository.findAll();
@@ -46,9 +49,10 @@ public class UserRepositoryTest extends AbstractRepositoryTest {
     @Test
     void shouldFindUserByEmail() {
         User test = User.builder().name("test").email("test@email.com").build();
-        entityManager.persist(test);
 
+        entityManager.persist(test);
         Optional<User> fromDb = userRepository.findUserByEmail("test@email.com");
+
         assertThat(fromDb, not(Optional.empty()));
         assertThat(fromDb, equalTo(Optional.of(test)));
     }

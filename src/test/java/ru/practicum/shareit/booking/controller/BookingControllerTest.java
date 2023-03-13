@@ -1,6 +1,7 @@
 package ru.practicum.shareit.booking.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,19 +12,18 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.booking.BookingController;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.item.dto.ItemFullDto;
-import ru.practicum.shareit.user.dto.UserDto;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static ru.practicum.shareit.TestData.booking1OfItem3;
 import static ru.practicum.shareit.validation.util.ValidationUtil.DEFAULT_DATE_TIME_FORMATTER;
 
 @WebMvcTest(BookingController.class)
@@ -35,28 +35,18 @@ public class BookingControllerTest {
     @Autowired
     private ObjectMapper mapper;
 
-    private final LocalDateTime startTime = LocalDateTime.now().plusHours(1);
-    private final LocalDateTime endTime = LocalDateTime.now().plusHours(2);
+    private final BookingFullDto bookingDto = BookingMapper.toBookingFullDto(booking1OfItem3);
 
-    private final BookingFullDto bookingDto = BookingFullDto.builder()
-            .id(1L)
-            .booker(UserDto.builder().id(1L).name("test").email("test@mail.com").build())
-            .item(ItemFullDto.builder()
-                    .id(1L).available(true).description("description").name("name").ownerId(2L).requestId(1L).build())
-            .start(startTime)
-            .end(endTime)
-            .status(Status.WAITING)
-            .build();
-
+    @SneakyThrows
     @Test
-    void shouldSaveNewBooking() throws Exception {
-        Mockito.when(bookingService.create(Mockito.anyLong(), Mockito.any())).thenReturn(bookingDto);
+    void shouldSaveNewBooking() {
         BookingCreationDto creationDto = BookingCreationDto.builder()
                 .itemId(1L)
-                .start(startTime)
-                .end(endTime)
+                .start(booking1OfItem3.getStart())
+                .end(booking1OfItem3.getEnd())
                 .build();
 
+        Mockito.when(bookingService.create(Mockito.anyLong(), Mockito.any())).thenReturn(bookingDto);
 
         mvc.perform(post("/bookings")
                         .header("X-Sharer-User-Id", 1L)
@@ -73,15 +63,17 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().name())));
     }
 
+    @SneakyThrows
     @Test
-    void shouldApproveStatus() throws Exception {
+    void shouldApproveStatus() {
         BookingFullDto approved = BookingFullDto.builder().id(bookingDto.getId())
                 .booker(bookingDto.getBooker())
                 .item(bookingDto.getItem())
-                .start(startTime)
-                .end(endTime)
+                .start(bookingDto.getStart())
+                .end(bookingDto.getEnd())
                 .status(Status.APPROVED)
                 .build();
+
         Mockito.when(bookingService.approveStatus(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyBoolean()))
                 .thenReturn(approved);
 
@@ -98,8 +90,9 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.status", is(approved.getStatus().name())));
     }
 
+    @SneakyThrows
     @Test
-    void shouldFindBookingById() throws Exception {
+    void shouldFindBookingById() {
         Mockito.when(bookingService.get(Mockito.anyLong(), Mockito.anyLong())).thenReturn(bookingDto);
 
         mvc.perform(get("/bookings/1")
@@ -114,8 +107,9 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.status", is(bookingDto.getStatus().name())));
     }
 
+    @SneakyThrows
     @Test
-    void shouldFindByState() throws Exception {
+    void shouldFindByState() {
         Mockito.when(bookingService.getAllByState(Mockito.anyLong(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(List.of(bookingDto));
 
@@ -137,8 +131,9 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().name())));
     }
 
+    @SneakyThrows
     @Test
-    void shouldFindByOwnerAndState() throws Exception {
+    void shouldFindByOwnerAndState() {
         Mockito.when(bookingService.getAllByOwnerAndState(
                 Mockito.anyLong(), Mockito.any(), Mockito.anyInt(), Mockito.anyInt())).thenReturn(List.of(bookingDto));
 

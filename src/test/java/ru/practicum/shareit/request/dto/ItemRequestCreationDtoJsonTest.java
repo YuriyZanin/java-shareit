@@ -1,5 +1,6 @@
 package ru.practicum.shareit.request.dto;
 
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.json.JsonTest;
@@ -9,13 +10,15 @@ import org.springframework.boot.test.json.ObjectContent;
 @JsonTest
 public class ItemRequestCreationDtoJsonTest {
     @Autowired
-    protected JacksonTester<ItemRequestCreationDto> json;
+    private JacksonTester<ItemRequestCreationDto> json;
 
+    @SneakyThrows
     @Test
-    void deserializationTest() throws Exception {
+    void deserializationTest() {
         String testString = "{ \"description\": \"test description\" }";
 
         ObjectContent<ItemRequestCreationDto> creationDto = json.parse(testString);
+
         creationDto.assertThat().isExactlyInstanceOf(ItemRequestCreationDto.class);
     }
 }

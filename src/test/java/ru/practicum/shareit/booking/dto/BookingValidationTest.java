@@ -18,7 +18,9 @@ public class BookingValidationTest extends AbstractValidationTest {
                 .start(LocalDateTime.now().plusMinutes(1))
                 .end(LocalDateTime.now().plusHours(1))
                 .build();
+
         Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
+
         assertTrue(violations.isEmpty());
     }
 
@@ -29,7 +31,9 @@ public class BookingValidationTest extends AbstractValidationTest {
                 .start(LocalDateTime.now().plusMinutes(1))
                 .end(LocalDateTime.now().plusHours(1))
                 .build();
+
         Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
+
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("itemId")));
     }
@@ -41,7 +45,9 @@ public class BookingValidationTest extends AbstractValidationTest {
                 .start(LocalDateTime.now().minusMinutes(1))
                 .end(LocalDateTime.now().plusMinutes(1))
                 .build();
+
         Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
+
         assertEquals(1, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("start")));
     }
@@ -53,7 +59,9 @@ public class BookingValidationTest extends AbstractValidationTest {
                 .start(LocalDateTime.now())
                 .end(LocalDateTime.now().minusMinutes(1))
                 .build();
+
         Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
+
         assertEquals(3, violations.size());
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("start")));
         assertTrue(violations.stream().anyMatch(v -> v.getPropertyPath().toString().equals("end")));
@@ -66,7 +74,9 @@ public class BookingValidationTest extends AbstractValidationTest {
                 .start(LocalDateTime.now().plusMinutes(2))
                 .end(LocalDateTime.now().plusMinutes(1))
                 .build();
+
         Set<ConstraintViolation<BookingCreationDto>> violations = validator.validate(test);
+
         assertEquals(1, violations.size());
     }
 }

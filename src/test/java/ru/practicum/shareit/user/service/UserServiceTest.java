@@ -26,8 +26,8 @@ public class UserServiceTest {
     @Test
     void shouldSaveUser() {
         UserDto userDto = UserDto.builder().name("test").email("test@mail.com").build();
-        userService.create(userDto);
 
+        userService.create(userDto);
         User result = em.createQuery("SELECT u FROM User u WHERE u.email = 'test@mail.com'", User.class)
                 .getSingleResult();
 
@@ -39,11 +39,10 @@ public class UserServiceTest {
     @Test
     void shouldUpdateUser() {
         User user = getNewUser();
-        em.persist(user);
 
+        em.persist(user);
         UserDto updateDto = UserDto.builder().name("updated name").email("update@mail.com").build();
         userService.update(user.getId(), updateDto);
-
         User fromDb = em.createQuery("SELECT u FROM User u WHERE u.id = :userId", User.class)
                 .setParameter("userId", user.getId())
                 .getSingleResult();
@@ -56,10 +55,11 @@ public class UserServiceTest {
     @Test
     void shouldFindAll() {
         User user = getNewUser();
-        em.persist(user);
 
+        em.persist(user);
         UserDto userDto = UserMapper.toUserDto(user);
         List<UserDto> all = userService.getAll();
+
         assertThat(all, hasSize(1));
         assertThat(all, hasItem(userDto));
     }
@@ -67,18 +67,19 @@ public class UserServiceTest {
     @Test
     void shouldFindById() {
         User user = getNewUser();
-        em.persist(user);
 
+        em.persist(user);
         UserDto fromDb = userService.get(user.getId());
         UserDto userDto = UserMapper.toUserDto(user);
+
         assertThat(fromDb, equalTo(userDto));
     }
 
     @Test
     void shouldDeleteById() {
         User user = getNewUser();
-        em.persist(user);
 
+        em.persist(user);
         userService.delete(user.getId());
         List<User> result = em.createQuery("SELECT u FROM User u WHERE u.email = 'test@mail.com'", User.class)
                 .getResultList();

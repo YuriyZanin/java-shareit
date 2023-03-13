@@ -50,6 +50,7 @@ public class ItemServiceImplTest {
                 .thenReturn(Collections.emptyList());
 
         CommentCreationDto creationDto = new CommentCreationDto(null, "test");
+
         Assertions.assertThrows(ValidationException.class, () ->
                 itemService.addComment(user1.getId(), item3OfUser2.getId(), creationDto));
     }
@@ -62,6 +63,7 @@ public class ItemServiceImplTest {
                 .thenReturn(List.of(booking4OfItem2));
 
         CommentCreationDto creationDto = new CommentCreationDto(null, "test");
+
         Assertions.assertThrows(ValidationException.class, () ->
                 itemService.addComment(user2.getId(), item2OfUser1.getId(), creationDto));
     }

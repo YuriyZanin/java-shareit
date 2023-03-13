@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +10,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.user.UserController;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import java.nio.charset.StandardCharsets;
@@ -19,6 +19,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static ru.practicum.shareit.TestData.userDto;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest {
@@ -29,14 +30,9 @@ public class UserControllerTest {
     @Autowired
     protected ObjectMapper mapper;
 
-    private final UserDto userDto = UserDto.builder()
-            .id(1L)
-            .name("test")
-            .email("test@mail.com")
-            .build();
-
+    @SneakyThrows
     @Test
-    void shouldSaveNewUser() throws Exception {
+    void shouldSaveNewUser() {
         Mockito.when(userService.create(Mockito.any())).thenReturn(userDto);
 
         mvc.perform(post("/users")
@@ -50,8 +46,9 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email", is(userDto.getEmail())));
     }
 
+    @SneakyThrows
     @Test
-    void shouldUpdateUser() throws Exception {
+    void shouldUpdateUser() {
         Mockito.when(userService.update(Mockito.anyLong(), Mockito.any())).thenReturn(userDto);
 
         mvc.perform(patch("/users/1")
@@ -65,14 +62,15 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email", is(userDto.getEmail())));
     }
 
+    @SneakyThrows
     @Test
-    void shouldDeleteUser() throws Exception {
-        mvc.perform(delete("/users/1"))
-                .andExpect(status().isOk());
+    void shouldDeleteUser() {
+        mvc.perform(delete("/users/1")).andExpect(status().isOk());
     }
 
+    @SneakyThrows
     @Test
-    void shouldFindUserById() throws Exception {
+    void shouldFindUserById() {
         Mockito.when(userService.get(Mockito.anyLong())).thenReturn(userDto);
 
         mvc.perform(get("/users/1")
@@ -83,8 +81,9 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.email", is(userDto.getEmail())));
     }
 
+    @SneakyThrows
     @Test
-    void shouldFindAllUsers() throws Exception {
+    void shouldFindAllUsers() {
         Mockito.when(userService.getAll()).thenReturn(List.of(userDto));
 
         mvc.perform(get("/users").accept(MediaType.APPLICATION_JSON))
