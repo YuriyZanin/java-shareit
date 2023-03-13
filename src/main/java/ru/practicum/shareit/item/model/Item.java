@@ -11,7 +11,6 @@ import java.util.List;
 @Table(name = "items", schema = "public")
 @Getter
 @Setter
-@ToString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -29,5 +28,6 @@ public class Item {
     @JoinColumn(name = "request_id")
     private ItemRequest request;
     @OneToMany(mappedBy = "item")
+    @ToString.Exclude
     private List<Comment> comments;
 }

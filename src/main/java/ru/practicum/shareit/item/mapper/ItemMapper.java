@@ -5,10 +5,17 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemFullDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.model.ItemRequest;
+import ru.practicum.shareit.user.model.User;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ItemMapper {
+    public static List<ItemDto> toItemDtos(List<Item> items) {
+        return items.stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+    }
+
     public static ItemDto toItemDto(Item item) {
         return new ItemDto(
                 item.getId(),
@@ -39,20 +46,14 @@ public class ItemMapper {
         );
     }
 
-    public static Item toItem(ItemDto itemDto) {
+    public static Item toItem(ItemDto itemDetails, User owner, ItemRequest request) {
         return Item.builder()
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
-                .build();
-    }
-
-    public static Item toItem(Long itemId, ItemDto itemDto) {
-        return Item.builder()
-                .id(itemId)
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(itemDto.getAvailable())
+                .id(itemDetails.getId())
+                .name(itemDetails.getName())
+                .description(itemDetails.getDescription())
+                .available(itemDetails.getAvailable())
+                .owner(owner)
+                .request(request)
                 .build();
     }
 }

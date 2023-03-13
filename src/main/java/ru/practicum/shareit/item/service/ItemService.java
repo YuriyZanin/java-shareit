@@ -14,11 +14,11 @@ public interface ItemService {
 
     ItemFullDto get(long userId, long itemId);
 
-    List<ItemFullDto> getAllByUser(long userId);
+    List<ItemFullDto> getAllByUser(long userId, int from, int size);
 
     void delete(long userId, long itemId);
 
-    List<ItemFullDto> getByText(long userId, String text);
+    List<ItemFullDto> getByText(long userId, String text, int from, int size);
 
     CommentFullDto addComment(long userId, long itemId, CommentCreationDto comment);
 }

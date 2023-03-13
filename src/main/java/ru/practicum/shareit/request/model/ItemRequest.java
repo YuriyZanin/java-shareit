@@ -4,7 +4,7 @@ import lombok.*;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "requests", schema = "public")
@@ -24,5 +24,5 @@ public class ItemRequest {
     @JoinColumn(name = "requester_id", nullable = false)
     private User requester;
     @Column(name = "create_date", nullable = false)
-    private LocalDate created;
+    private LocalDateTime created;
 }
