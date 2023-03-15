@@ -1,8 +1,6 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -90,10 +88,11 @@ public class BookingServiceImpl implements BookingService {
         getUser(userId);
 
         Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
-        Pageable page = PageRequest.of(from / size, size, sortByStart);
-        List<Booking> bookings = bookingRepository.findAllByBookerId(page, userId).getContent();
+        List<Booking> bookings = bookingRepository.findAllByBookerId(userId, sortByStart);
 
         return doFilterByState(bookings, state).stream()
+                .skip(from)
+                .limit(size)
                 .map(BookingMapper::toBookingFullDto)
                 .collect(Collectors.toList());
     }
@@ -102,10 +101,11 @@ public class BookingServiceImpl implements BookingService {
     public Collection<BookingFullDto> getAllByOwnerAndState(long userId, State state, int from, int size) {
         getUser(userId);
 
-        Pageable page = PageRequest.of(from / size, size);
-        List<Booking> bookings = bookingRepository.findAllByOwner(page, userId).getContent();
+        List<Booking> bookings = bookingRepository.findAllByOwner(userId);
 
         return doFilterByState(bookings, state).stream()
+                .skip(from)
+                .limit(size)
                 .map(BookingMapper::toBookingFullDto)
                 .collect(Collectors.toList());
     }

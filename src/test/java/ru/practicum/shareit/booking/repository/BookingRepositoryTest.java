@@ -2,7 +2,6 @@ package ru.practicum.shareit.booking.repository;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import ru.practicum.shareit.AbstractRepositoryTest;
 import ru.practicum.shareit.TestData;
@@ -56,8 +55,7 @@ public class BookingRepositoryTest extends AbstractRepositoryTest {
         entityManager.persist(owner);
         entityManager.persist(item);
         entityManager.persist(booking);
-        List<Booking> all = bookingRepository.findAllByBookerId(PageRequest.of(0, 1), booker.getId())
-                .getContent();
+        List<Booking> all = bookingRepository.findAllByBookerId(booker.getId(), Sort.by("start"));
 
         assertThat(all, not(empty()));
         assertThat(all, hasSize(1));
@@ -109,8 +107,7 @@ public class BookingRepositoryTest extends AbstractRepositoryTest {
         entityManager.persist(owner);
         entityManager.persist(item);
         entityManager.persist(booking);
-        List<Booking> all = bookingRepository.findAllByOwner(PageRequest.of(0, 2), owner.getId())
-                .getContent();
+        List<Booking> all = bookingRepository.findAllByOwner(owner.getId());
 
         assertThat(all, not(empty()));
         assertThat(all, hasSize(1));
