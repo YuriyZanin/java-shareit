@@ -3,87 +3,68 @@ package ru.practicum.shareit.request.service;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.TestData;
+import org.springframework.test.annotation.DirtiesContext;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.request.dto.ItemRequestCreationDto;
 import ru.practicum.shareit.request.dto.ItemRequestDto;
-import ru.practicum.shareit.request.mapper.ItemRequestMapper;
-import ru.practicum.shareit.request.model.ItemRequest;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.service.UserService;
 
-import javax.persistence.EntityManager;
-import java.util.Collections;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-@Transactional
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 public class ItemRequestServiceTest {
-    private final EntityManager em;
     private final ItemRequestService requestService;
+    private final UserService userService;
+    private final ItemService itemService;
 
     @Test
-    void shouldSaveRequest() {
-        User user = TestData.getNewUser();
-        ItemRequestCreationDto creationDto = new ItemRequestCreationDto(null, "description");
+    void shouldSaveAndGetRequests() {
+        UserDto user1Dto = UserDto.builder().name("user1").email("user1@mail.com").build();
+        UserDto user2Dto = UserDto.builder().name("user2").email("user2@mail.com").build();
+        ItemRequestCreationDto request1Dto = new ItemRequestCreationDto(null, "description 1");
+        ItemRequestCreationDto request2Dto = new ItemRequestCreationDto(null, "description 2");
+        ItemRequestCreationDto request3Dto = new ItemRequestCreationDto(null, "description 3");
 
-        em.persist(user);
-        ItemRequestDto saved = requestService.create(user.getId(), creationDto);
-        ItemRequest fromDb = em.createQuery("SELECT i FROM ItemRequest i WHERE i.id = :requestId", ItemRequest.class)
-                .setParameter("requestId", saved.getId())
-                .getSingleResult();
+        UserDto createdUser1 = userService.create(user1Dto);
+        UserDto createdUser2 = userService.create(user2Dto);
+        ItemRequestDto createdRequest1 = requestService.create(createdUser1.getId(), request1Dto);
+        ItemRequestDto createdRequest2 = requestService.create(createdUser1.getId(), request2Dto);
+        ItemRequestDto createdRequest3 = requestService.create(createdUser1.getId(), request3Dto);
+        ItemRequestDto request1FromDb = requestService.getById(createdUser1.getId(), createdRequest1.getId());
+        ItemRequestDto request2FromDb = requestService.getById(createdUser1.getId(), createdRequest2.getId());
+        ItemRequestDto request3FromDb = requestService.getById(createdUser1.getId(), createdRequest3.getId());
 
-        assertThat(fromDb.getId(), notNullValue());
-        assertThat(fromDb.getRequester(), equalTo(user));
-        assertThat(fromDb.getDescription(), equalTo(creationDto.getDescription()));
-    }
+        ItemDto itemDto = ItemDto.builder()
+                .name("item1").description("item for request 1").available(true).requestId(createdRequest1.getId())
+                .build();
+        itemService.create(createdUser2.getId(), itemDto);
+        ItemRequestDto request1AfterAddItem = requestService.getById(createdUser1.getId(), createdRequest1.getId());
 
-    @Test
-    void shouldFindByUser() {
-        User user = TestData.getNewUser();
-        ItemRequest request = TestData.getNewItemRequest(user);
+        List<ItemRequestDto> allByUser1 = requestService.getByUser(createdUser1.getId());
+        List<ItemRequestDto> allForUser1 = requestService.getAll(createdUser1.getId(), 0, 3);
+        List<ItemRequestDto> allForUser2 = requestService.getAll(createdUser2.getId(), 0, 3);
 
-        em.persist(user);
-        em.persist(request);
-        List<ItemRequestDto> requests = requestService.getByUser(user.getId());
-        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
-
-        assertThat(requests, hasSize(1));
-        assertThat(requests, hasItem(itemRequestDto));
-    }
-
-    @Test
-    void shouldFindById() {
-        User user = TestData.getNewUser();
-        ItemRequest request = TestData.getNewItemRequest(user);
-
-        em.persist(user);
-        em.persist(request);
-        ItemRequestDto fromDb = requestService.getById(user.getId(), request.getId());
-        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
-
-        assertThat(fromDb, equalTo(itemRequestDto));
-    }
-
-    @Test
-    void shouldFindAll() {
-        User user1 = User.builder().name("user1").email("user1@mail.com").build();
-        User user2 = User.builder().name("user2").email("user2@mail.com").build();
-        ItemRequest request = TestData.getNewItemRequest(user1);
-
-        em.persist(user1);
-        em.persist(user2);
-        em.persist(request);
-        List<ItemRequestDto> requestsForUser1 = requestService.getAll(user1.getId(), 0, 2);
-        List<ItemRequestDto> requestsForUser2 = requestService.getAll(user2.getId(), 0, 1);
-        ItemRequestDto itemRequestDto = ItemRequestMapper.toItemRequestDto(request, Collections.emptyList());
-
-        assertThat(requestsForUser1, hasSize(0));
-        assertThat(requestsForUser2, hasSize(1));
-        assertThat(requestsForUser2, hasItem(itemRequestDto));
+        assertThat(request1FromDb, equalTo(createdRequest1));
+        assertThat(request2FromDb, equalTo(createdRequest2));
+        assertThat(request3FromDb, equalTo(createdRequest3));
+        assertThat(request1AfterAddItem.getItems(), not(empty()));
+        assertThat(request1AfterAddItem.getItems(), hasSize(1));
+        assertThat(request1AfterAddItem.getItems().get(0).getRequestId(), equalTo(createdRequest1.getId()));
+        assertThat(allByUser1, not(empty()));
+        assertThat(allByUser1, hasSize(3));
+        assertThat(allByUser1, hasItems(request1AfterAddItem, createdRequest2, createdRequest3));
+        assertThat(allForUser1, empty());
+        assertThat(allForUser2, not(empty()));
+        assertThat(allForUser2, hasItems(request1AfterAddItem, createdRequest2, createdRequest3));
     }
 }

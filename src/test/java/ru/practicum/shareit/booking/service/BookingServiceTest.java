@@ -4,124 +4,110 @@ import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingCreationDto;
 import ru.practicum.shareit.booking.dto.BookingFullDto;
-import ru.practicum.shareit.booking.mapper.BookingMapper;
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemFullDto;
+import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.service.UserService;
 
-import javax.persistence.EntityManager;
 import java.util.Collection;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static ru.practicum.shareit.TestData.*;
+import static ru.practicum.shareit.TestData.futureEndTime;
+import static ru.practicum.shareit.TestData.futureStartTime;
 
 @Transactional
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class BookingServiceTest {
-    private final EntityManager em;
+    private final UserService userService;
+    private final ItemService itemService;
     private final BookingService bookingService;
 
     @Test
-    void shouldSaveBooking() {
-        User owner = User.builder().name("owner").email("owner@mail.com").build();
-        User user = User.builder().name("user").email("user@mail.com").build();
-        Item item = getNewItem(owner);
+    void shouldSaveAndGetBookings() {
+        UserDto owner = UserDto.builder().name("owner").email("owner@mail.com").build();
+        UserDto user = UserDto.builder().name("user").email("user@mail.com").build();
+        ItemDto item1 = ItemDto.builder().name("item1").description("item 1").available(true).build();
+        ItemDto item2 = ItemDto.builder().name("item2").description("item 2").available(true).build();
+        ItemDto item3 = ItemDto.builder().name("item3").description("item 3").available(true).build();
 
-        em.persist(owner);
-        em.persist(user);
-        em.persist(item);
-        BookingFullDto saved = bookingService.create(user.getId(), BookingCreationDto.builder()
-                .itemId(item.getId())
-                .start(currentDateTime)
-                .end(futureEndTime)
-                .build());
-        Booking fromDb = em.createQuery("SELECT b FROM Booking b WHERE b.id = :bookingId", Booking.class)
-                .setParameter("bookingId", saved.getId())
-                .getSingleResult();
+        UserDto createdOwner = userService.create(owner);
+        ItemFullDto createdItem1 = itemService.create(createdOwner.getId(), item1);
+        ItemFullDto createdItem2 = itemService.create(createdOwner.getId(), item2);
+        ItemFullDto createdItem3 = itemService.create(createdOwner.getId(), item3);
+        UserDto createdUser = userService.create(user);
 
-        assertThat(fromDb.getId(), notNullValue());
-        assertThat(fromDb.getItem(), equalTo(item));
-        assertThat(fromDb.getStart(), equalTo(currentDateTime));
-        assertThat(fromDb.getEnd(), equalTo(futureEndTime));
-        assertThat(fromDb.getStatus(), equalTo(Status.WAITING));
-        assertThat(fromDb.getBooker(), equalTo(user));
-    }
+        BookingCreationDto booking1Dto = BookingCreationDto.builder()
+                .itemId(createdItem1.getId()).start(futureStartTime).end(futureEndTime).build();
+        BookingCreationDto booking2Dto = BookingCreationDto.builder()
+                .itemId(createdItem2.getId()).start(futureStartTime).end(futureEndTime).build();
+        BookingCreationDto booking3Dto = BookingCreationDto.builder()
+                .itemId(createdItem3.getId()).start(futureStartTime).end(futureEndTime).build();
 
-    @Test
-    void shouldApproveStatus() {
-        User owner = User.builder().name("owner").email("owner@mail.com").build();
-        User booker = User.builder().name("user").email("user@mail.com").build();
-        Item item = getNewItem(owner);
-        Booking booking = getNewBooking(booker, item);
+        BookingFullDto createdBooking1 = bookingService.create(createdUser.getId(), booking1Dto);
+        BookingFullDto createdBooking2 = bookingService.create(createdUser.getId(), booking2Dto);
+        BookingFullDto createdBooking3 = bookingService.create(createdUser.getId(), booking3Dto);
 
-        em.persist(owner);
-        em.persist(booker);
-        em.persist(item);
-        em.persist(booking);
-        bookingService.approveStatus(owner.getId(), booking.getId(), true);
-        Booking fromDb = em.createQuery("SELECT b FROM Booking b WHERE b.id = :bookingId", Booking.class)
-                .setParameter("bookingId", booking.getId())
-                .getSingleResult();
+        BookingFullDto booking1FromDb = bookingService.get(createdUser.getId(), createdBooking1.getId());
+        BookingFullDto booking2FromDb = bookingService.get(createdUser.getId(), createdBooking2.getId());
+        BookingFullDto booking3FromDb = bookingService.get(createdUser.getId(), createdBooking3.getId());
 
-        assertThat(fromDb.getStatus(), equalTo(Status.APPROVED));
-    }
+        Collection<BookingFullDto> allWaitingByBooker = bookingService.getAllByState(createdUser.getId(),
+                State.WAITING, 0, 3);
+        Collection<BookingFullDto> allWaitingByOwner = bookingService.getAllByOwnerAndState(createdOwner.getId(),
+                State.WAITING, 0, 3);
 
-    @Test
-    void shouldFindById() {
-        User owner = User.builder().name("owner").email("owner@mail.com").build();
-        User booker = User.builder().name("user").email("user@mail.com").build();
-        Item item = getNewItem(owner);
-        Booking booking = getNewBooking(booker, item);
+        BookingFullDto approvedBooking1 = bookingService.approveStatus(createdOwner.getId(),
+                createdBooking1.getId(), true);
+        BookingFullDto approvedBooking2 = bookingService.approveStatus(createdOwner.getId(),
+                createdBooking2.getId(), true);
+        BookingFullDto approvedBooking3 = bookingService.approveStatus(createdOwner.getId(),
+                createdBooking3.getId(), true);
 
-        em.persist(owner);
-        em.persist(booker);
-        em.persist(item);
-        em.persist(booking);
-        BookingFullDto fromDb = bookingService.get(booker.getId(), booking.getId());
-        BookingFullDto fullDto = BookingMapper.toBookingFullDto(booking);
+        Collection<BookingFullDto> allFutureByBooker = bookingService.getAllByState(createdUser.getId(),
+                State.FUTURE, 0, 3);
+        Collection<BookingFullDto> allFutureByOwner = bookingService.getAllByOwnerAndState(createdOwner.getId(),
+                State.FUTURE, 0, 3);
 
-        assertThat(fromDb, equalTo(fullDto));
-    }
+        BookingFullDto rejectedBooking1 = bookingService.approveStatus(createdOwner.getId(),
+                createdBooking1.getId(), false);
+        BookingFullDto rejectedBooking2 = bookingService.approveStatus(createdOwner.getId(),
+                createdBooking2.getId(), false);
+        BookingFullDto rejectedBooking3 = bookingService.approveStatus(createdOwner.getId(),
+                createdBooking3.getId(), false);
 
-    @Test
-    void shouldFindByState() {
-        User owner = User.builder().name("owner").email("owner@mail.com").build();
-        User booker = User.builder().name("user").email("user@mail.com").build();
-        Item item = getNewItem(owner);
-        Booking booking = getNewBooking(booker, item);
+        Collection<BookingFullDto> allRejectedByBooker = bookingService.getAllByState(createdUser.getId(),
+                State.REJECTED, 0, 3);
+        Collection<BookingFullDto> allRejectedByOwner = bookingService.getAllByOwnerAndState(createdOwner.getId(),
+                State.REJECTED, 0, 3);
 
-        em.persist(owner);
-        em.persist(booker);
-        em.persist(item);
-        em.persist(booking);
-        Collection<BookingFullDto> all = bookingService.getAllByState(booker.getId(), State.ALL, 0, 1);
-        BookingFullDto fullDto = BookingMapper.toBookingFullDto(booking);
-
-        assertThat(all, hasSize(1));
-        assertThat(all, hasItem(fullDto));
-    }
-
-    @Test
-    void shouldFindByOwnerAndState() {
-        User owner = User.builder().name("owner").email("owner@mail.com").build();
-        User booker = User.builder().name("user").email("user@mail.com").build();
-        Item item = getNewItem(owner);
-        Booking booking = getNewBooking(booker, item);
-
-        em.persist(owner);
-        em.persist(booker);
-        em.persist(item);
-        em.persist(booking);
-        Collection<BookingFullDto> all = bookingService.getAllByOwnerAndState(owner.getId(), State.ALL, 0, 1);
-        BookingFullDto fullDto = BookingMapper.toBookingFullDto(booking);
-
-        assertThat(all, hasSize(1));
-        assertThat(all, hasItem(fullDto));
+        assertThat(createdBooking1, equalTo(booking1FromDb));
+        assertThat(createdBooking2, equalTo(booking2FromDb));
+        assertThat(createdBooking3, equalTo(booking3FromDb));
+        assertThat(allWaitingByBooker, not(empty()));
+        assertThat(allWaitingByBooker, hasSize(3));
+        assertThat(allWaitingByBooker, hasItems(createdBooking1, createdBooking2, createdBooking3));
+        assertThat(allWaitingByOwner, not(empty()));
+        assertThat(allWaitingByOwner, hasSize(3));
+        assertThat(allWaitingByOwner, hasItems(createdBooking1, createdBooking2, createdBooking3));
+        assertThat(allFutureByBooker, not(empty()));
+        assertThat(allFutureByBooker, hasSize(3));
+        assertThat(allFutureByBooker, hasItems(approvedBooking1, approvedBooking2, approvedBooking3));
+        assertThat(allFutureByOwner, not(empty()));
+        assertThat(allFutureByOwner, hasSize(3));
+        assertThat(allFutureByOwner, hasItems(approvedBooking1, approvedBooking2, approvedBooking3));
+        assertThat(allRejectedByBooker, not(empty()));
+        assertThat(allRejectedByBooker, hasSize(3));
+        assertThat(allRejectedByBooker, hasItems(rejectedBooking1, rejectedBooking2, rejectedBooking3));
+        assertThat(allRejectedByOwner, not(empty()));
+        assertThat(allRejectedByOwner, hasSize(3));
+        assertThat(allRejectedByOwner, hasItems(rejectedBooking1, rejectedBooking2, rejectedBooking3));
     }
 }

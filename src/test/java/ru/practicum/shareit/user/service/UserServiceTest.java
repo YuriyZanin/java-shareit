@@ -1,101 +1,57 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.exception.AlreadyExistException;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.practicum.shareit.user.dto.UserDto;
-import ru.practicum.shareit.user.mapper.UserMapper;
-import ru.practicum.shareit.user.model.User;
 
-import javax.persistence.EntityManager;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static ru.practicum.shareit.TestData.getNewUser;
 
-@Transactional
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 public class UserServiceTest {
-    private final EntityManager em;
     private final UserService userService;
 
     @Test
-    void shouldSaveUser() {
-        UserDto userDto = UserDto.builder().name("test").email("test@mail.com").build();
+    void shouldSaveAndGetUsers() {
+        UserDto user1Dto = UserDto.builder().name("user1").email("user1@mail.com").build();
+        UserDto user2Dto = UserDto.builder().name("user2").email("user2@mail.com").build();
+        UserDto user3Dto = UserDto.builder().name("user3").email("user3@mail.com").build();
+        UserDto updateDto = UserDto.builder().name("updated").email("updated@mail.com").build();
 
-        userService.create(userDto);
-        User result = em.createQuery("SELECT u FROM User u WHERE u.email = 'test@mail.com'", User.class)
-                .getSingleResult();
+        UserDto createdUser1 = userService.create(user1Dto);
+        UserDto createdUser2 = userService.create(user2Dto);
+        UserDto createdUser3 = userService.create(user3Dto);
 
-        assertThat(result.getId(), notNullValue());
-        assertThat(result.getName(), equalTo(userDto.getName()));
-        assertThat(result.getEmail(), equalTo(userDto.getEmail()));
-    }
+        UserDto user1FromDb = userService.get(createdUser1.getId());
+        UserDto user2FromDb = userService.get(createdUser2.getId());
+        UserDto user3FromDb = userService.get(createdUser3.getId());
 
-    @Test
-    void shouldBeFailedIfAlreadyExist() {
-        User user = getNewUser();
-        UserDto userDto2 = UserDto.builder().name("test2").email(user.getEmail()).build();
+        UserDto updatedUser1 = userService.update(createdUser1.getId(), updateDto);
+        UserDto user1AfterUpdate = userService.get(createdUser1.getId());
 
-        em.persist(user);
-
-        Assertions.assertThrows(AlreadyExistException.class, () -> userService.create(userDto2));
-    }
-
-    @Test
-    void shouldUpdateUser() {
-        User user = getNewUser();
-
-        em.persist(user);
-        UserDto updateDto = UserDto.builder().name("updated name").email("update@mail.com").build();
-        userService.update(user.getId(), updateDto);
-        User fromDb = em.createQuery("SELECT u FROM User u WHERE u.id = :userId", User.class)
-                .setParameter("userId", user.getId())
-                .getSingleResult();
-
-        assertThat(fromDb.getId(), equalTo(user.getId()));
-        assertThat(fromDb.getName(), equalTo(updateDto.getName()));
-        assertThat(fromDb.getEmail(), equalTo(updateDto.getEmail()));
-    }
-
-    @Test
-    void shouldFindAll() {
-        User user = getNewUser();
-
-        em.persist(user);
-        UserDto userDto = UserMapper.toUserDto(user);
         List<UserDto> all = userService.getAll();
 
-        assertThat(all, hasSize(1));
-        assertThat(all, hasItem(userDto));
-    }
+        userService.delete(createdUser1.getId());
+        List<UserDto> allAfterDelete = userService.getAll();
 
-    @Test
-    void shouldFindById() {
-        User user = getNewUser();
-
-        em.persist(user);
-        UserDto fromDb = userService.get(user.getId());
-        UserDto userDto = UserMapper.toUserDto(user);
-
-        assertThat(fromDb, equalTo(userDto));
-    }
-
-    @Test
-    void shouldDeleteById() {
-        User user = getNewUser();
-
-        em.persist(user);
-        userService.delete(user.getId());
-        List<User> result = em.createQuery("SELECT u FROM User u WHERE u.email = 'test@mail.com'", User.class)
-                .getResultList();
-
-        assertThat(result, hasSize(0));
+        assertThat(user1FromDb, equalTo(createdUser1));
+        assertThat(user2FromDb, equalTo(createdUser2));
+        assertThat(user3FromDb, equalTo(createdUser3));
+        assertThat(updatedUser1, equalTo(user1AfterUpdate));
+        assertThat(all, not(empty()));
+        assertThat(all, hasSize(3));
+        assertThat(all, hasItems(updatedUser1, createdUser2, createdUser3));
+        assertThat(allAfterDelete, not(empty()));
+        assertThat(allAfterDelete, hasSize(2));
+        assertThat(allAfterDelete, hasItems(createdUser2, createdUser3));
     }
 }

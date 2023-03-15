@@ -11,7 +11,6 @@ import java.util.List;
 @Builder
 @Getter
 @Setter
-@ToString
 @EqualsAndHashCode
 @AllArgsConstructor
 public class ItemRequestDto {

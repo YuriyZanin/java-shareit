@@ -8,8 +8,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.booking.repository.BookingRepository;
+import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
+import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.repository.ItemRequestRepository;
@@ -40,6 +42,41 @@ public class ItemServiceImplTest {
     void setUp() {
         itemService = new ItemServiceImpl(
                 itemRepository, userRepository, bookingRepository, commentRepository, itemRequestRepository);
+    }
+
+    @Test
+    void shouldBeFailedCreateIfRequestNotFound() {
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
+        Mockito.when(itemRequestRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(NotFoundException.class,
+                () -> itemService.create(user1.getId(), ItemDto.builder().requestId(1L).build()));
+    }
+
+    @Test
+    void shouldBeFailedCreateIfOwnerNotFound() {
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(NotFoundException.class,
+                () -> itemService.create(user1.getId(), itemDto));
+    }
+
+    @Test
+    void shouldBeFailedIfGetNotFound() {
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
+        Mockito.when(itemRepository.findById(Mockito.anyLong())).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(NotFoundException.class, () -> itemService.get(user1.getId(), NOT_FOUND_ID));
+    }
+
+    @Test
+    void shouldBeFailedWhenUpdateNotOwner() {
+        Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
+        Mockito.when(itemRepository.findByIdAndOwnerId(Mockito.anyLong(), Mockito.anyLong()))
+                .thenReturn(Optional.empty());
+
+        Assertions.assertThrows(NotFoundException.class,
+                () -> itemService.update(user1.getId(), item3OfUser2.getId(), itemDto));
     }
 
     @Test

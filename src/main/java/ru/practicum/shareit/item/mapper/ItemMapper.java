@@ -8,6 +8,7 @@ import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,7 @@ public class ItemMapper {
                         : null,
                 item.getComments() != null
                         ? item.getComments().stream().map(CommentMapper::toCommentFullDto).collect(Collectors.toList())
-                        : null
+                        : Collections.emptyList()
         );
     }
 

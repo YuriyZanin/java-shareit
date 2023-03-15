@@ -1,165 +1,99 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.shareit.booking.model.Booking;
-import ru.practicum.shareit.booking.model.Status;
-import ru.practicum.shareit.exception.NotFoundException;
+import org.springframework.test.annotation.DirtiesContext;
+import ru.practicum.shareit.booking.dto.BookingCreationDto;
+import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.CommentFullDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemFullDto;
-import ru.practicum.shareit.item.mapper.ItemMapper;
-import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.mapper.UserMapper;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.service.UserService;
 
-import javax.persistence.EntityManager;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static ru.practicum.shareit.TestData.*;
+import static ru.practicum.shareit.TestData.currentDateTime;
+import static ru.practicum.shareit.TestData.getNewUser;
 
-@Transactional
 @SpringBootTest
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 public class ItemServiceTest {
-    private final EntityManager em;
     private final ItemService itemService;
+    private final UserService userService;
+    private final BookingService bookingService;
 
-    private User owner;
-    private Item item;
-
-    @BeforeEach
-    void setUp() {
-        owner = getNewUser();
-        item = getNewItem(owner);
-    }
-
+    @SneakyThrows
     @Test
-    void shouldSaveItem() {
-        ItemDto creationDto = ItemDto.builder().name("name").description("description").available(true).build();
-
-        em.persist(owner);
-        ItemFullDto created = itemService.create(owner.getId(), creationDto);
-        Item fromDb = em.createQuery("SELECT i FROM Item i WHERE i.id = :id", Item.class)
-                .setParameter("id", created.getId())
-                .getSingleResult();
-
-        assertThat(fromDb.getId(), equalTo(created.getId()));
-        assertThat(fromDb.getOwner(), equalTo(owner));
-        assertThat(fromDb.getName(), equalTo(creationDto.getName()));
-        assertThat(fromDb.getDescription(), equalTo(creationDto.getDescription()));
-        assertThat(fromDb.getAvailable(), equalTo(true));
-    }
-
-    @Test
-    void shouldBeFailedIfItemRequestNotFound() {
-        ItemDto creationDto = ItemDto.builder()
-                .name("name").description("description").available(true).requestId(NOT_FOUND_ID).build();
-
-        em.persist(owner);
-
-        Assertions.assertThrows(NotFoundException.class, () -> itemService.create(owner.getId(), creationDto));
-    }
-
-    @Test
-    void shouldBeFailedWhenUpdateOtherUser() {
-        User notOwner = User.builder().email("user2@mail.com").name("user").build();
-        ItemDto creationDto = ItemDto.builder()
-                .name("name").description("description").available(true).requestId(NOT_FOUND_ID).build();
-
-        em.persist(notOwner);
-        em.persist(owner);
-        em.persist(item);
-
-        Assertions.assertThrows(NotFoundException.class,
-                () -> itemService.update(notOwner.getId(), item.getId(), creationDto));
-    }
-
-    @Test
-    void shouldUpdateItem() {
+    void shouldSaveAndGetItems() {
+        User owner = getNewUser();
+        ItemDto item1Dto = ItemDto.builder().name("item1").description("description 1").available(true).build();
+        ItemDto item2Dto = ItemDto.builder().name("item2").description("description 2").available(true).build();
+        ItemDto item3Dto = ItemDto.builder().name("item3").description("description 3").available(true).build();
         ItemDto updateDto = ItemDto.builder()
                 .name("updated name").available(false).description("updated description").build();
 
-        em.persist(owner);
-        em.persist(item);
-        itemService.update(owner.getId(), item.getId(), updateDto);
-        Item fromDb = em.createQuery("SELECT i FROM Item i WHERE i.id = :itemId", Item.class)
-                .setParameter("itemId", item.getId())
-                .getSingleResult();
+        UserDto createdOwner = userService.create(UserMapper.toUserDto(owner));
 
-        assertThat(fromDb.getId(), equalTo(item.getId()));
-        assertThat(fromDb.getName(), equalTo(updateDto.getName()));
-        assertThat(fromDb.getAvailable(), equalTo(updateDto.getAvailable()));
-        assertThat(fromDb.getDescription(), equalTo(updateDto.getDescription()));
-    }
+        ItemFullDto createdItem1 = itemService.create(createdOwner.getId(), item1Dto);
+        ItemFullDto createdItem2 = itemService.create(createdOwner.getId(), item2Dto);
+        ItemFullDto createdItem3 = itemService.create(createdOwner.getId(), item3Dto);
 
-    @Test
-    void shouldGetById() {
-        em.persist(owner);
-        em.persist(item);
-        ItemFullDto fromDb = itemService.get(owner.getId(), item.getId());
-        ItemFullDto fullDto = ItemMapper.toItemFullDto(item, null, null);
+        ItemFullDto item1FromDb = itemService.get(createdOwner.getId(), createdItem1.getId());
+        ItemFullDto item2FromDb = itemService.get(createdOwner.getId(), createdItem2.getId());
+        ItemFullDto item3FromDb = itemService.get(createdOwner.getId(), createdItem3.getId());
 
-        assertThat(fromDb, equalTo(fullDto));
-    }
+        List<ItemFullDto> allByUser = itemService.getAllByUser(createdOwner.getId(), 0, 3);
+        List<ItemFullDto> allByDescription = itemService.getByText(createdOwner.getId(),
+                "description", 0, 3);
+        List<ItemFullDto> allByName = itemService.getByText(createdOwner.getId(), "item", 0, 3);
+        List<ItemFullDto> emptyText = itemService.getByText(createdOwner.getId(), "", 0, 1);
 
-    @Test
-    void shouldGetAllByUser() {
-        em.persist(owner);
-        em.persist(item);
-        List<ItemFullDto> allByUser = itemService.getAllByUser(owner.getId(), 0, 1);
-        ItemFullDto itemFullDto = ItemMapper.toItemFullDto(item, null, null);
+        UserDto otherUser = userService.create(UserDto.builder().name("other").email("other@mail.com").build());
+        ItemFullDto updatedItem1 = itemService.update(createdOwner.getId(), createdItem1.getId(), updateDto);
+        ItemFullDto item1AfterUpdate = itemService.get(createdOwner.getId(), createdItem1.getId());
 
-        assertThat(allByUser, hasSize(1));
-        assertThat(allByUser, hasItem(itemFullDto));
-    }
+        BookingCreationDto bookingDto = BookingCreationDto.builder()
+                .itemId(createdItem2.getId()).start(currentDateTime).end(currentDateTime.plusSeconds(1)).build();
+        bookingService.create(otherUser.getId(), bookingDto);
+        Thread.sleep(2000L);
+        CommentFullDto commentOfItem2 = itemService.addComment(otherUser.getId(), createdItem2.getId(),
+                new CommentCreationDto(null, "test"));
+        ItemFullDto item2AfterAddComment = itemService.get(createdOwner.getId(), createdItem2.getId());
 
-    @Test
-    void shouldGetByText() {
-        em.persist(owner);
-        em.persist(item);
-        List<ItemFullDto> all = itemService.getByText(owner.getId(), "description", 0, 1);
-        ItemFullDto itemFullDto = ItemMapper.toItemFullDto(item, null, null);
+        itemService.delete(createdOwner.getId(), createdItem1.getId());
+        List<ItemFullDto> allAfterDelete = itemService.getAllByUser(createdOwner.getId(), 0, 3);
 
-        assertThat(all, hasSize(1));
-        assertThat(all, hasItem(itemFullDto));
-    }
-
-    @Test
-    void shouldAddComment() {
-        Booking booking = Booking.builder()
-                .booker(owner).item(item).start(LocalDateTime.now().minusHours(1)).end(LocalDateTime.now())
-                .status(Status.APPROVED)
-                .build();
-
-        em.persist(owner);
-        em.persist(item);
-        em.persist(booking);
-        CommentCreationDto commentCreationDto = new CommentCreationDto(null, "test comment");
-        CommentFullDto commentFullDto = itemService.addComment(owner.getId(), item.getId(), commentCreationDto);
-
-        assertThat(commentFullDto.getId(), notNullValue());
-        assertThat(commentFullDto.getText(), equalTo(commentCreationDto.getText()));
-        assertThat(commentFullDto.getAuthorName(), equalTo(owner.getName()));
-    }
-
-    @Test
-    void shouldDeleteById() {
-        em.persist(owner);
-        em.persist(item);
-        itemService.delete(owner.getId(), item.getId());
-        List<Item> items = em.createQuery("SELECT i FROM Item i WHERE i.id = :itemId", Item.class)
-                .setParameter("itemId", item.getId())
-                .getResultList();
-
-        assertThat(items, hasSize(0));
+        assertThat(item1FromDb, equalTo(createdItem1));
+        assertThat(item2FromDb, equalTo(createdItem2));
+        assertThat(item3FromDb, equalTo(createdItem3));
+        assertThat(allByUser, not(empty()));
+        assertThat(allByUser, hasSize(3));
+        assertThat(allByUser, hasItems(createdItem1, createdItem2, createdItem3));
+        assertThat(allByDescription, not(empty()));
+        assertThat(allByDescription, hasSize(3));
+        assertThat(allByDescription, hasItems(createdItem1, createdItem2, createdItem3));
+        assertThat(allByName, not(empty()));
+        assertThat(allByName, hasSize(3));
+        assertThat(allByName, hasItems(createdItem1, createdItem2, createdItem3));
+        assertThat(emptyText, empty());
+        assertThat(updatedItem1, equalTo(item1AfterUpdate));
+        assertThat(item2AfterAddComment.getComments(), not(empty()));
+        assertThat(item2AfterAddComment.getComments(), hasSize(1));
+        assertThat(item2AfterAddComment.getComments(), hasItem(commentOfItem2));
+        assertThat(allAfterDelete, not(empty()));
+        assertThat(allAfterDelete, hasSize(2));
+        assertThat(allAfterDelete, hasItems(item2AfterAddComment, createdItem3));
     }
 }
