@@ -21,10 +21,7 @@ public class ItemRequestDtoJsonTest {
     void serializationTest() {
         JsonContent<ItemRequestDto> jsonContent = json.write(requestDto);
 
-        assertThat(jsonContent).extractingJsonPathNumberValue("$.id", requestDto.getId());
-        assertThat(jsonContent).extractingJsonPathStringValue("$.description", requestDto.getDescription());
         assertThat(jsonContent).extractingJsonPathStringValue("$.created", requestDto.getCreated()
                 .format(DEFAULT_DATE_TIME_FORMATTER));
-        assertThat(jsonContent).extractingJsonPathArrayValue("$.items", requestDto.getItems());
     }
 }

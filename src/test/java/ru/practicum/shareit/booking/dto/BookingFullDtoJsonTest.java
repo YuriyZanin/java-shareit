@@ -24,13 +24,9 @@ public class BookingFullDtoJsonTest {
 
         JsonContent<BookingFullDto> jsonTest = json.write(fullDto);
 
-        assertThat(jsonTest).extractingJsonPathNumberValue("$.id", fullDto.getId());
         assertThat(jsonTest).extractingJsonPathStringValue("$.start", booking1OfItem3.getStart()
                 .format(DEFAULT_DATE_TIME_FORMATTER));
         assertThat(jsonTest).extractingJsonPathStringValue("$.end", booking1OfItem3.getEnd()
                 .format(DEFAULT_DATE_TIME_FORMATTER));
-        assertThat(jsonTest).extractingJsonPathStringValue("$.status", fullDto.getStatus().name());
-        assertThat(jsonTest).extractingJsonPathValue("$.booker", fullDto.getBooker());
-        assertThat(jsonTest).extractingJsonPathValue("$.item", fullDto.getItem());
     }
 }

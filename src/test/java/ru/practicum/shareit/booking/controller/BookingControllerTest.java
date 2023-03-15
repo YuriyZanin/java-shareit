@@ -61,7 +61,7 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.booker.id", is(bookingDto.getBooker().getId()), Long.class))
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
-                .andExpect(jsonPath("$.status", is(bookingDto.getStatus().name())));
+                .andExpect(jsonPath("$.status", is(bookingDto.getStatus())));
     }
 
     @SneakyThrows
@@ -72,7 +72,7 @@ public class BookingControllerTest {
                 .item(bookingDto.getItem())
                 .start(bookingDto.getStart())
                 .end(bookingDto.getEnd())
-                .status(Status.APPROVED)
+                .status(Status.APPROVED.name())
                 .build();
 
         Mockito.when(bookingService.approveStatus(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyBoolean()))
@@ -88,7 +88,7 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.booker.id", is(bookingDto.getBooker().getId()), Long.class))
                 .andExpect(jsonPath("$.start", is(approved.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.end", is(approved.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
-                .andExpect(jsonPath("$.status", is(approved.getStatus().name())));
+                .andExpect(jsonPath("$.status", is(approved.getStatus())));
     }
 
     @SneakyThrows
@@ -105,7 +105,7 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.booker.id", is(bookingDto.getBooker().getId()), Long.class))
                 .andExpect(jsonPath("$.start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
-                .andExpect(jsonPath("$.status", is(bookingDto.getStatus().name())));
+                .andExpect(jsonPath("$.status", is(bookingDto.getStatus())));
     }
 
     @SneakyThrows
@@ -129,7 +129,7 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].booker.id", is(bookingDto.getBooker().getId()), Long.class))
                 .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
-                .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().name())));
+                .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus())));
     }
 
     @SneakyThrows
@@ -153,7 +153,7 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$.[0].booker.id", is(bookingDto.getBooker().getId()), Long.class))
                 .andExpect(jsonPath("$.[0].start", is(bookingDto.getStart().format(DEFAULT_DATE_TIME_FORMATTER))))
                 .andExpect(jsonPath("$.[0].end", is(bookingDto.getEnd().format(DEFAULT_DATE_TIME_FORMATTER))))
-                .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus().name())));
+                .andExpect(jsonPath("$.[0].status", is(bookingDto.getStatus())));
     }
 
     @SneakyThrows

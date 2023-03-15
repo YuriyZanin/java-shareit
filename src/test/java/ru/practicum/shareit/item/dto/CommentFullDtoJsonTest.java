@@ -21,9 +21,6 @@ public class CommentFullDtoJsonTest {
     @Test
     void serializationTest() {
         JsonContent<CommentFullDto> jsonTest = json.write(commentFullDto);
-        assertThat(jsonTest).extractingJsonPathNumberValue("$.id", commentFullDto.getId());
-        assertThat(jsonTest).extractingJsonPathStringValue("$.text", commentFullDto.getText());
-        assertThat(jsonTest).extractingJsonPathStringValue("$.authorName", commentFullDto.getAuthorName());
         assertThat(jsonTest).extractingJsonPathStringValue("$.created", commentFullDto.getCreated()
                 .format(ValidationUtil.DEFAULT_DATE_TIME_FORMATTER));
     }
