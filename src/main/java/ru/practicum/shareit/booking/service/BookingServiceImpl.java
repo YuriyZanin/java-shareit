@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,10 +19,8 @@ import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,59 +88,76 @@ public class BookingServiceImpl implements BookingService {
         getUser(userId);
 
         Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
-        List<Booking> bookings = bookingRepository.findAllByBookerId(userId, sortByStart);
+        Pageable pageable = PageRequest.of(from / size, size, sortByStart);
 
-        return doFilterByState(bookings, state).stream()
-                .skip(from)
-                .limit(size)
-                .map(BookingMapper::toBookingFullDto)
-                .collect(Collectors.toList());
+        switch (state) {
+            case ALL:
+                return bookingRepository.findAllByBookerId(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
+                        .collect(Collectors.toList());
+            case CURRENT:
+                return bookingRepository.findAllCurrentByBookerId(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
+                        .collect(Collectors.toList());
+            case PAST:
+                return bookingRepository.findAllPastByBookerId(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
+                        .collect(Collectors.toList());
+            case FUTURE:
+                return bookingRepository.findAllFutureByBookerId(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
+                        .collect(Collectors.toList());
+            case WAITING:
+                return bookingRepository.findAllWaitingByBookerId(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
+                        .collect(Collectors.toList());
+            case REJECTED:
+                return bookingRepository.findAllRejectedByBookerId(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
+                        .collect(Collectors.toList());
+            default:
+                return Collections.emptyList();
+        }
     }
 
     @Override
     public Collection<BookingFullDto> getAllByOwnerAndState(long userId, State state, int from, int size) {
         getUser(userId);
 
-        List<Booking> bookings = bookingRepository.findAllByOwner(userId);
+        Sort sortByStart = Sort.by(Sort.Direction.DESC, "start");
+        Pageable pageable = PageRequest.of(from / size, size, sortByStart);
 
-        return doFilterByState(bookings, state).stream()
-                .skip(from)
-                .limit(size)
-                .map(BookingMapper::toBookingFullDto)
-                .collect(Collectors.toList());
-    }
-
-    private User getUser(long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
-    }
-
-    private Collection<Booking> doFilterByState(Collection<Booking> bookings, State state) {
-        LocalDateTime now = LocalDateTime.now();
         switch (state) {
             case ALL:
-                return bookings;
+                return bookingRepository.findAllByOwner(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
+                        .collect(Collectors.toList());
             case CURRENT:
-                return bookings.stream()
-                        .filter(b -> now.isAfter(b.getStart()) && now.isBefore(b.getEnd()))
+                return bookingRepository.findAllCurrentByOwner(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case PAST:
-                return bookings.stream()
-                        .filter(b -> now.isAfter(b.getEnd()))
+                return bookingRepository.findAllPastByOwner(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case FUTURE:
-                return bookings.stream()
-                        .filter(b -> now.isBefore(b.getStart()))
+                return bookingRepository.findAllFutureByOwner(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case WAITING:
-                return bookings.stream()
-                        .filter(b -> b.getStatus().equals(Status.WAITING))
+                return bookingRepository.findAllWaitingByOwner(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case REJECTED:
-                return bookings.stream()
-                        .filter(b -> b.getStatus().equals(Status.REJECTED))
+                return bookingRepository.findAllRejectedByOwner(userId, pageable).stream()
+                        .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             default:
                 return Collections.emptyList();
         }
+    }
+
+    private User getUser(long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("Пользователь не найден"));
     }
 }
