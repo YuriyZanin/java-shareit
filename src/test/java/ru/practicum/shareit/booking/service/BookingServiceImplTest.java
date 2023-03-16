@@ -110,8 +110,8 @@ public class BookingServiceImplTest {
     @Test
     void shouldFindAllRejected() {
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user2));
-        Mockito.when(bookingRepository.findAllByBookerId(Mockito.anyLong(), Mockito.any()))
-                .thenReturn(List.of(booking2WithApprove, booking3WithRejected));
+        Mockito.when(bookingRepository.findAllRejectedByBookerId(Mockito.anyLong(), Mockito.any()))
+                .thenReturn(List.of(booking3WithRejected));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.REJECTED, 0, 2);
 
@@ -122,7 +122,7 @@ public class BookingServiceImplTest {
     @Test
     void shouldFindAllFuture() {
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user2));
-        Mockito.when(bookingRepository.findAllByBookerId(Mockito.anyLong(), Mockito.any()))
+        Mockito.when(bookingRepository.findAllFutureByBookerId(Mockito.anyLong(), Mockito.any()))
                 .thenReturn(List.of(booking2WithApprove, booking3WithRejected));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.FUTURE, 0, 2);
@@ -135,8 +135,8 @@ public class BookingServiceImplTest {
     @Test
     void shouldFindAllWaiting() {
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user2));
-        Mockito.when(bookingRepository.findAllByBookerId(Mockito.anyLong(), Mockito.any()))
-                .thenReturn(List.of(booking2WithApprove, booking3WithRejected, booking4OfItem2));
+        Mockito.when(bookingRepository.findAllWaitingByBookerId(Mockito.anyLong(), Mockito.any()))
+                .thenReturn(List.of(booking4OfItem2));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.WAITING, 0, 2);
 
@@ -147,8 +147,8 @@ public class BookingServiceImplTest {
     @Test
     void shouldFindAllCurrent() {
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user2));
-        Mockito.when(bookingRepository.findAllByBookerId(Mockito.anyLong(), Mockito.any()))
-                .thenReturn(List.of(booking2WithApprove, booking3WithRejected, booking4OfItem2));
+        Mockito.when(bookingRepository.findAllCurrentByBookerId(Mockito.anyLong(), Mockito.any()))
+                .thenReturn(List.of(booking4OfItem2));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.CURRENT, 0, 2);
 
@@ -159,8 +159,8 @@ public class BookingServiceImplTest {
     @Test
     void shouldFindAllPast() {
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user2));
-        Mockito.when(bookingRepository.findAllByBookerId(Mockito.anyLong(), Mockito.any()))
-                .thenReturn(List.of(booking2WithApprove, booking3WithRejected, booking5OfItem1));
+        Mockito.when(bookingRepository.findAllPastByBookerId(Mockito.anyLong(), Mockito.any()))
+                .thenReturn(List.of(booking5OfItem1));
 
         Collection<BookingFullDto> all = bookingService.getAllByState(user2.getId(), State.PAST, 0, 2);
 

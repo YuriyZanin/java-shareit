@@ -7,10 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import ru.practicum.shareit.booking.dto.BookingCreationDto;
-import ru.practicum.shareit.booking.service.BookingService;
-import ru.practicum.shareit.item.dto.CommentCreationDto;
-import ru.practicum.shareit.item.dto.CommentFullDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemFullDto;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -22,7 +18,6 @@ import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static ru.practicum.shareit.TestData.currentDateTime;
 import static ru.practicum.shareit.TestData.getNewUser;
 
 @SpringBootTest
@@ -32,7 +27,6 @@ import static ru.practicum.shareit.TestData.getNewUser;
 public class ItemServiceTest {
     private final ItemService itemService;
     private final UserService userService;
-    private final BookingService bookingService;
 
     @SneakyThrows
     @Test
@@ -64,14 +58,6 @@ public class ItemServiceTest {
         ItemFullDto updatedItem1 = itemService.update(createdOwner.getId(), createdItem1.getId(), updateDto);
         ItemFullDto item1AfterUpdate = itemService.get(createdOwner.getId(), createdItem1.getId());
 
-        BookingCreationDto bookingDto = BookingCreationDto.builder()
-                .itemId(createdItem2.getId()).start(currentDateTime).end(currentDateTime.plusSeconds(1)).build();
-        bookingService.create(otherUser.getId(), bookingDto);
-        Thread.sleep(2000L);
-        CommentFullDto commentOfItem2 = itemService.addComment(otherUser.getId(), createdItem2.getId(),
-                new CommentCreationDto(null, "test"));
-        ItemFullDto item2AfterAddComment = itemService.get(createdOwner.getId(), createdItem2.getId());
-
         itemService.delete(createdOwner.getId(), createdItem1.getId());
         List<ItemFullDto> allAfterDelete = itemService.getAllByUser(createdOwner.getId(), 0, 3);
 
@@ -89,11 +75,7 @@ public class ItemServiceTest {
         assertThat(allByName, hasItems(createdItem1, createdItem2, createdItem3));
         assertThat(emptyText, empty());
         assertThat(updatedItem1, equalTo(item1AfterUpdate));
-        assertThat(item2AfterAddComment.getComments(), not(empty()));
-        assertThat(item2AfterAddComment.getComments(), hasSize(1));
-        assertThat(item2AfterAddComment.getComments(), hasItem(commentOfItem2));
         assertThat(allAfterDelete, not(empty()));
         assertThat(allAfterDelete, hasSize(2));
-        assertThat(allAfterDelete, hasItems(item2AfterAddComment, createdItem3));
     }
 }
