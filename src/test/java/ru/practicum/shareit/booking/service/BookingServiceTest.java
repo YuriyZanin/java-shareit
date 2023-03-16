@@ -59,6 +59,11 @@ public class BookingServiceTest {
         BookingFullDto booking2FromDb = bookingService.get(createdUser.getId(), createdBooking2.getId());
         BookingFullDto booking3FromDb = bookingService.get(createdUser.getId(), createdBooking3.getId());
 
+        Collection<BookingFullDto> allByStateByBooker = bookingService.getAllByState(createdUser.getId(),
+                State.ALL, 0, 3);
+        Collection<BookingFullDto> allByStateByOwner = bookingService.getAllByState(createdOwner.getId(),
+                State.ALL, 0, 3);
+
         Collection<BookingFullDto> allWaitingByBooker = bookingService.getAllByState(createdUser.getId(),
                 State.WAITING, 0, 3);
         Collection<BookingFullDto> allWaitingByOwner = bookingService.getAllByOwnerAndState(createdOwner.getId(),
@@ -91,6 +96,12 @@ public class BookingServiceTest {
         assertThat(createdBooking1, equalTo(booking1FromDb));
         assertThat(createdBooking2, equalTo(booking2FromDb));
         assertThat(createdBooking3, equalTo(booking3FromDb));
+        assertThat(allByStateByBooker, not(empty()));
+        assertThat(allByStateByBooker, hasSize(3));
+        assertThat(allByStateByBooker, hasItems(createdBooking1, createdBooking2, createdBooking3));
+        assertThat(allByStateByOwner, not(empty()));
+        assertThat(allByStateByOwner, hasSize(3));
+        assertThat(allByStateByOwner, hasItems(createdBooking1, createdBooking2, createdBooking3));
         assertThat(allWaitingByBooker, not(empty()));
         assertThat(allWaitingByBooker, hasSize(3));
         assertThat(allWaitingByBooker, hasItems(createdBooking1, createdBooking2, createdBooking3));
