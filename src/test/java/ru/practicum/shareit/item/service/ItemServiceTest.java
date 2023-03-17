@@ -75,6 +75,14 @@ public class ItemServiceTest {
         itemService.delete(createdOwner.getId(), createdItem1.getId());
         List<ItemFullDto> allAfterDelete = itemService.getAllByUser(createdOwner.getId(), 0, 3);
 
+        BookingCreationDto bookingDto = BookingCreationDto.builder()
+                .itemId(createdItem2.getId()).start(currentDateTime).end(currentDateTime.plusSeconds(1)).build();
+        bookingService.create(otherUser.getId(), bookingDto);
+        Thread.sleep(2000L);
+        CommentFullDto commentOfItem2 = itemService.addComment(otherUser.getId(), createdItem2.getId(),
+                new CommentCreationDto(null, "test"));
+        ItemFullDto item2AfterAddComment = itemService.get(createdOwner.getId(), createdItem2.getId());
+
         assertThat(item1FromDb, equalTo(createdItem1));
         assertThat(item2FromDb, equalTo(createdItem2));
         assertThat(item3FromDb, equalTo(createdItem3));
