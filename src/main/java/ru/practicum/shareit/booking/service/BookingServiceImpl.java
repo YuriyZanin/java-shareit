@@ -129,27 +129,27 @@ public class BookingServiceImpl implements BookingService {
 
         switch (state) {
             case ALL:
-                return bookingRepository.findAllByOwner(userId, pageable).stream()
+                return bookingRepository.findAllByOwnerId(userId, pageable).stream()
                         .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case CURRENT:
-                return bookingRepository.findAllCurrentByOwner(userId, pageable).stream()
+                return bookingRepository.findAllCurrentByOwnerId(userId, pageable).stream()
                         .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case PAST:
-                return bookingRepository.findAllPastByOwner(userId, pageable).stream()
+                return bookingRepository.findAllPastByOwnerId(userId, pageable).stream()
                         .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case FUTURE:
-                return bookingRepository.findAllFutureByOwner(userId, pageable).stream()
+                return bookingRepository.findAllFutureByOwnerId(userId, pageable).stream()
                         .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case WAITING:
-                return bookingRepository.findAllWaitingByOwner(userId, pageable).stream()
+                return bookingRepository.findAllWaitingByOwnerId(userId, pageable).stream()
                         .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             case REJECTED:
-                return bookingRepository.findAllRejectedByOwner(userId, pageable).stream()
+                return bookingRepository.findAllRejectedByOwnerId(userId, pageable).stream()
                         .map(BookingMapper::toBookingFullDto)
                         .collect(Collectors.toList());
             default:

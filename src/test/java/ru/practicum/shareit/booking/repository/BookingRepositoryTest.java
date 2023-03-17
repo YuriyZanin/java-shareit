@@ -112,7 +112,7 @@ public class BookingRepositoryTest extends AbstractRepositoryTest {
         entityManager.persist(item);
         entityManager.persist(booking);
         Pageable pageable = PageRequest.of(0, 3);
-        List<Booking> all = bookingRepository.findAllByOwner(owner.getId(), pageable);
+        List<Booking> all = bookingRepository.findAllByOwnerId(owner.getId(), pageable);
 
         assertThat(all, not(empty()));
         assertThat(all, hasSize(1));
