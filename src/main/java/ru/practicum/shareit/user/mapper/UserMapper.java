@@ -19,11 +19,4 @@ public class UserMapper {
                 .build();
     }
 
-    public static User toUser(Long userId, UserDto userDto) {
-        return User.builder()
-                .id(userId)
-                .name(userDto.getName())
-                .email(userDto.getEmail())
-                .build();
-    }
 }

@@ -9,6 +9,6 @@ public class EndDateAfterStartDateValidator implements ConstraintValidator<EndDa
 
     @Override
     public boolean isValid(BookingCreationDto value, ConstraintValidatorContext context) {
-        return value.getEnd().isAfter(value.getStart());
+        return value.getStart() != null && value.getEnd() != null && value.getEnd().isAfter(value.getStart());
     }
 }

@@ -13,12 +13,13 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.validation.CreateValidation;
 import ru.practicum.shareit.validation.UpdateValidation;
 
-import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import java.util.List;
 
 import static ru.practicum.shareit.validation.util.ValidationUtil.checkErrors;
 
 @Slf4j
+@Validated
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor
@@ -47,16 +48,20 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemFullDto> findByUser(@RequestHeader("X-Sharer-User-Id") long userId) {
+    public List<ItemFullDto> findByUser(@RequestHeader("X-Sharer-User-Id") long userId,
+                                        @RequestParam(defaultValue = "0") @Min(0) int from,
+                                        @RequestParam(defaultValue = "20") @Min(1) int size) {
         log.info("Запрос всех вещей у пользователя с id {}", userId);
-        return itemService.getAllByUser(userId);
+        return itemService.getAllByUser(userId, from, size);
     }
 
     @GetMapping("/search")
     public List<ItemFullDto> findByNameAndDescription(@RequestHeader("X-Sharer-User-Id") long userId,
-                                                      @RequestParam String text) {
+                                                      @RequestParam String text,
+                                                      @RequestParam(defaultValue = "0") @Min(0) int from,
+                                                      @RequestParam(defaultValue = "20") @Min(1) int size) {
         log.info("Запрос на поиск вещей содержащих: {}", text);
-        return itemService.getByText(userId, text);
+        return itemService.getByText(userId, text, from, size);
     }
 
     @DeleteMapping("/{itemId}")
@@ -67,7 +72,7 @@ public class ItemController {
 
     @PostMapping("/{itemId}/comment")
     public CommentFullDto addComment(@RequestHeader("X-Sharer-User-Id") long userId, @PathVariable long itemId,
-                                     @Valid @RequestBody CommentCreationDto comment, BindingResult errors) {
+                                     @Validated @RequestBody CommentCreationDto comment, BindingResult errors) {
         checkErrors(errors);
         log.info("Запрос на добавление комментария к вещи с id {}", itemId);
         return itemService.addComment(userId, itemId, comment);
