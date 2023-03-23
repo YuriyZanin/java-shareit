@@ -13,7 +13,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.model.User;
@@ -38,7 +37,7 @@ public class BookingServiceImpl implements BookingService {
         Item item = itemRepository.findByIdAndOwnerIdNot(bookingDetails.getItemId(), userId)
                 .orElseThrow(() -> new NotFoundException("Вещь не найдена"));
         if (!item.getAvailable()) {
-            throw new ValidationException("Вещь не доступна для бронирования");
+            throw new IllegalArgumentException("Вещь не доступна для бронирования");
         }
         Booking booking = BookingMapper.toBooking(bookingDetails, user, item, Status.WAITING);
         return BookingMapper.toBookingFullDto(bookingRepository.save(booking));
@@ -55,10 +54,10 @@ public class BookingServiceImpl implements BookingService {
                     "Пользователь %s не является владельцем вещи %s", owner.getName(), booking.getItem().getName()));
         }
         if (booking.getStatus().equals(Status.APPROVED) && approved) {
-            throw new ValidationException("Статус уже подтвержден");
+            throw new IllegalArgumentException("Статус уже подтвержден");
         }
         if (booking.getStatus().equals(Status.REJECTED) && !approved) {
-            throw new ValidationException("Статус уже откланен");
+            throw new IllegalArgumentException("Статус уже откланен");
         }
 
         if (approved) {

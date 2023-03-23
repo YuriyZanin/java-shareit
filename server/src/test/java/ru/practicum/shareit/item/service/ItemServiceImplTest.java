@@ -9,7 +9,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.repository.CommentRepository;
@@ -88,7 +87,7 @@ public class ItemServiceImplTest {
 
         CommentCreationDto creationDto = new CommentCreationDto(null, "test");
 
-        Assertions.assertThrows(ValidationException.class, () ->
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
                 itemService.addComment(user1.getId(), item3OfUser2.getId(), creationDto));
     }
 
@@ -101,7 +100,7 @@ public class ItemServiceImplTest {
 
         CommentCreationDto creationDto = new CommentCreationDto(null, "test");
 
-        Assertions.assertThrows(ValidationException.class, () ->
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
                 itemService.addComment(user2.getId(), item2OfUser1.getId(), creationDto));
     }
 }

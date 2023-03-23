@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.Status;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.CommentCreationDto;
 import ru.practicum.shareit.item.dto.CommentFullDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -145,10 +144,10 @@ public class ItemServiceImpl implements ItemService {
         List<Booking> bookings = bookingRepository
                 .findAllByBookerIdAndItemId(userId, itemId, Sort.by("end"));
         if (bookings == null || bookings.isEmpty()) {
-            throw new ValidationException("Пользователь не брал вещь в аренду");
+            throw new IllegalArgumentException("Пользователь не брал вещь в аренду");
         }
         if (bookings.get(0).getEnd().isAfter(LocalDateTime.now())) {
-            throw new ValidationException("Время аренды еще не прошло");
+            throw new IllegalArgumentException("Время аренды еще не прошло");
         }
 
         Comment saved = commentRepository.save(CommentMapper.toComment(comment, author, item, LocalDateTime.now()

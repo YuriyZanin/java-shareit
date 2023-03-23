@@ -12,7 +12,6 @@ import ru.practicum.shareit.booking.dto.BookingFullDto;
 import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -56,7 +55,7 @@ public class BookingServiceImplTest {
         Mockito.when(bookingRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(booking2WithApprove));
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
 
-        Assertions.assertThrows(ValidationException.class, () ->
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
                 bookingService.approveStatus(user1.getId(), booking2WithApprove.getId(), true));
     }
 
@@ -65,7 +64,7 @@ public class BookingServiceImplTest {
         Mockito.when(bookingRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(booking3WithRejected));
         Mockito.when(userRepository.findById(Mockito.anyLong())).thenReturn(Optional.of(user1));
 
-        Assertions.assertThrows(ValidationException.class, () ->
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
                 bookingService.approveStatus(user1.getId(), booking3WithRejected.getId(), false));
     }
 
@@ -81,7 +80,7 @@ public class BookingServiceImplTest {
         Mockito.when(itemRepository.findByIdAndOwnerIdNot(Mockito.anyLong(), Mockito.anyLong()))
                 .thenReturn(Optional.of(itemNotAvailable));
 
-        Assertions.assertThrows(ValidationException.class, () ->
+        Assertions.assertThrows(IllegalArgumentException.class, () ->
                 bookingService.create(user1.getId(), creationDto));
     }
 

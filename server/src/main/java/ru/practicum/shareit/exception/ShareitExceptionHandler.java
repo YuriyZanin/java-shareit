@@ -11,13 +11,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ShareitExceptionHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handelValidationException(final ValidationException e) {
-        log.error(e.getMessage());
-        return new ErrorResponse(e.getMessage());
-    }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIllegalArgumentException(final IllegalArgumentException e) {
         log.error(e.getMessage());
         return new ErrorResponse(e.getMessage());
